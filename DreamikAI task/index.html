@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/jszip"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip-utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver"></script>
+    <title>Kids Label Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Kids Label Generator</h1>
+    <div id="uploadSection">
+        <label for="bgImage">Upload Background Image:</label>
+        <input type="file" id="bgImage" accept="image/*">
+        <br><br>
+        <label for="textFile">Upload TXT/JSON File:</label>
+        <input type="file" id="textFile" accept=".txt, .json">
+        <br><br>
+        <label for="imageFolder">Upload Kid's Image Folder:</label>
+        <input type="file" id="imageFolder" accept="image/*" webkitdirectory>
+        <br><br>
+        <button onclick="generateLabels()">Generate Labels</button>
+    </div>
+
+    <div id="canvasContainer">
+        <!-- Multiple canvases will be created for each kid -->
+    </div>
+
+    <button id="downloadAllButton" onclick="downloadAllLabels()" style="display: none;">Download All Labels</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
