@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamikAi</title>
+    <style>
+        #header {
+            color: rgb(8, 6, 25);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid blue;
+        }
+
+        .brand-name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .brand-name span {
+            font-size: 1.5rem;
+        }
+
+        nav {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li {
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid blue;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a {
+            color: rgb(4, 1, 1);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li:hover {
+            background-color: blue;
+            border-radius: 10px;
+            color: white;
+            transform: scale(1.1); 
+        }
+        nav ul li a:hover
+        {
+            color: white;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .brand-name {
+                font-size: 2rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav ul li {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1 class="brand-name">Dreamik Ai <br><span>Customise</span></h1>
+        <nav>
+            <ul>
+                <li><a href="#">Go To Shop</a></li>
+                <li><a href="index.html">Bulk Order</a></li>
+                <li><a href="#">Cart</a></li>
+            </ul>
+        </nav>
+    </div>
+</body>
+</html>
