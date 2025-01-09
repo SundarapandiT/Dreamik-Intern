@@ -93,22 +93,32 @@ function drawLabel(ctx, data, imageFile, canvasWidth, canvasHeight) {
             image.onload = function () {
                 ctx.save();
                 ctx.beginPath();
-                const circleX = canvasWidth * 0.17;
-                const circleY = canvasHeight * 0.375;
-                const circleRadius = canvasWidth * 0.125;
-                ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+
+                // Draw an oval frame
+                const centerX = canvasWidth * 0.17;
+                const centerY = canvasHeight * 0.375;
+                const radiusX = canvasWidth * 0.125;
+                const radiusY = canvasHeight * 0.1875;
+
+                ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
                 ctx.closePath();
                 ctx.clip();
+
+                // Draw the image inside the oval frame
                 ctx.drawImage(image, canvasWidth * 0.04, canvasHeight * 0.1875, canvasWidth * 0.25, canvasHeight * 0.375);
                 ctx.restore();
 
+                // Text details
+                // Text Details
                 ctx.fillStyle = '#000';
-                ctx.font = `${canvasWidth * 0.036}px Arial`;
-                ctx.fillText(`Name: ${name}`, canvasWidth * 0.54, canvasHeight * 0.1875);
+                ctx.font = `${canvasWidth * 0.042}px san-serif `; // Name font size increased
+                ctx.fillText(`${name}`, canvasWidth * 0.54, canvasHeight * 0.1875);
+                
+                ctx.font = `${canvasWidth * 0.036}px Arial`; // Other text sizes remain the same
                 ctx.fillText(`${className}`, canvasWidth * 0.54, canvasHeight * 0.3125);
                 ctx.fillText(`${section}`, canvasWidth * 0.79, canvasHeight * 0.3125);
-                ctx.fillText(`${subject}`, canvasWidth * 0.54, canvasHeight * 0.4375);
-                ctx.fillText(`${school}`, canvasWidth * 0.52, canvasHeight * 0.5625);
+                ctx.fillText(`${subject}`, canvasWidth * 0.54, canvasHeight * 0.4275);
+                ctx.fillText(`${school}`, canvasWidth * 0.44, canvasHeight * 0.5625);
 
                 resolve();
             };
@@ -142,3 +152,5 @@ function downloadAllLabels() {
         saveAs(content, 'labels.zip');
     });
 }
+
+downloadAllButton.addEventListener('click', downloadAllLabels);
