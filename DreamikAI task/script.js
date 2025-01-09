@@ -43,16 +43,15 @@ function generateLabels() {
 
             canvasContainer.innerHTML = '';
 
-            // Loop through each image in the folder and generate a label
             imageFiles.forEach((imageFile, index) => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 1200;
-                canvas.height = 800;
+                canvas.width = 450;
+                canvas.height = 300;
 
                 const ctx = canvas.getContext('2d');
-                const textData = data[index % data.length]; // Loop through text data if images are more
+                const textData = data[index % data.length];
 
-                drawLabel(ctx, textData, imageFile).then(() => {
+                drawLabel(ctx, textData, imageFile, canvas.width, canvas.height).then(() => {
                     canvasContainer.appendChild(canvas);
                     if (index === imageFiles.length - 1) {
                         downloadAllButton.style.display = 'block';
@@ -80,33 +79,36 @@ function parseTxtFile(content) {
     });
 }
 
-function drawLabel(ctx, data, imageFile) {
+function drawLabel(ctx, data, imageFile, canvasWidth, canvasHeight) {
     return new Promise((resolve) => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
         const { name, className, section, subject, school } = data;
 
         const backgroundImg = new Image();
         backgroundImg.onload = function () {
-            ctx.drawImage(backgroundImg, 0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.drawImage(backgroundImg, 0, 0, canvasWidth, canvasHeight);
 
             const image = new Image();
             image.onload = function () {
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(200, 300, 150, 0, Math.PI * 2);
+                const circleX = canvasWidth * 0.17;
+                const circleY = canvasHeight * 0.375;
+                const circleRadius = canvasWidth * 0.125;
+                ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
                 ctx.closePath();
                 ctx.clip();
-                ctx.drawImage(image, 50, 150, 300, 300);
+                ctx.drawImage(image, canvasWidth * 0.04, canvasHeight * 0.1875, canvasWidth * 0.25, canvasHeight * 0.375);
                 ctx.restore();
 
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold 36px Arial';
-                ctx.fillText(`Name: ${name}`, 650, 150);
-                ctx.fillText(`${className}`, 650, 250);
-                ctx.fillText(`${section}`, 950, 250);
-                ctx.fillText(`${subject}`, 650, 350);
-                ctx.fillText(`${school}`, 650, 450);
+                ctx.font = `${canvasWidth * 0.036}px Arial`;
+                ctx.fillText(`Name: ${name}`, canvasWidth * 0.54, canvasHeight * 0.1875);
+                ctx.fillText(`${className}`, canvasWidth * 0.54, canvasHeight * 0.3125);
+                ctx.fillText(`${section}`, canvasWidth * 0.79, canvasHeight * 0.3125);
+                ctx.fillText(`${subject}`, canvasWidth * 0.54, canvasHeight * 0.4375);
+                ctx.fillText(`${school}`, canvasWidth * 0.52, canvasHeight * 0.5625);
 
                 resolve();
             };
