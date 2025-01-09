@@ -111,7 +111,7 @@ function drawLabel(ctx, data, imageFile, canvasWidth, canvasHeight) {
                 // Text details
                 // Text Details
                 ctx.fillStyle = '#000';
-                ctx.font = `${canvasWidth * 0.042}px san-serif `; // Name font size increased
+                ctx.font = `${canvasWidth * 0.046}px san-serif `; // Name font size increased
                 ctx.fillText(`${name}`, canvasWidth * 0.54, canvasHeight * 0.1875);
                 
                 ctx.font = `${canvasWidth * 0.036}px Arial`; // Other text sizes remain the same
