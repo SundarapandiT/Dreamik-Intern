@@ -1,0 +1,17 @@
+vb1.1,bulk-ns-details, max: 10, end,,,,
+
+imgname, kidsname, kidsclass, kidssec,kidsroll,kidsschool, end kids-
+
+boy(1).png, Rahul, III,C,,Indian Public School,end kids-
+
+boy(2).png, Ashok, IV,, 16, Barath School of Sainik kids New Delhi, end kids-
+
+boy(3).png, Thomas Gabriel Prabhakar, V,A,33,DAV School Mahim Mumbai,end kids-boy(4).png, Moh. Akbar Ahmed, II,D,, Islamic Indian Public School Muzaffarabad, end kids-boy(5).png,Jsharailang Lyngdoh Mawphlang, Jr.
+
+KG, Lilly,, Sikkim kindergarten School Gangtok,end kids-
+
+girl(6).png, Radhika, III,C,, Indian Public School,end kids-girl(7).png, Anshika
+
+Nagpal, IV, 16, Barath School of Sainik kids New Delhi, end kids-girl(8).png, Pooja Potnurwar Prabhakar, V,A,33,DAV School Mahim Kanpur,end kids-
+
+girl(9).png, Jannath Marha Marraikar, II,D,,Islamic Public School of Kerala Kozhikode, end kids-girl(10).png, Rashmitha Veeramsetti, Sr. KG, Jasmine, J&K kindergarten School Srinagar, end
