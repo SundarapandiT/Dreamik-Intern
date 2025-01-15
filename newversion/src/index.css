@@ -1,0 +1,225 @@
+/* ======= Body ======= */
+body {
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.8),
+    rgba(224, 247, 250, 0.6),
+    rgba(200, 230, 200, 0.6),
+    rgba(163, 185, 198, 0.6),
+    rgba(255, 204, 153, 0.6),
+    rgba(255, 235, 245, 0.6)
+  );
+  font-family: "Arial", sans-serif;
+  color: #333333;
+  margin: 0;
+  padding: 0;
+}
+
+/* ======= Product Sample ======= */
+#productsample {
+  display: flex;
+  width: 100%;
+  height: 120px;
+  margin: 20px auto;
+  padding: 10px;
+  border: 2px solid #7c9885;
+  border-radius: 10px;
+  align-items: center;
+  overflow-x: auto;
+}
+
+/* Scrollbar Styling */
+#productsample::-webkit-scrollbar {
+  height: 8px;
+}
+
+#productsample::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+#productsample::-webkit-scrollbar-thumb {
+  background: #7c9885;
+  border-radius: 10px;
+}
+
+#productsample::-webkit-scrollbar-thumb:hover {
+  background: #6b8673;
+}
+
+/* ======= Sample Product ======= */
+.sampleprod {
+  width: 200px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-right: 2px solid #ee6c4d;
+  padding: 10px;
+  transition: transform 0.5s, box-shadow 0.5s;
+}
+
+.sampleprod:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sampleimg {
+  width: 80%;
+  max-height: 70%;
+}
+
+.sampletitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* ======= Product Section ======= */
+#products {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  background: linear-gradient(135deg, #ffffff 30%, #dbe3ee 60%, #eff5f2 90%);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.product {
+  width: 400px;
+  height: 350px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.product:hover {
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.productimg {
+  max-width: 80%;
+  max-height: 180px;
+  border-radius: 5px;
+  transition: transform 0.3s;
+}
+
+.productimg:hover {
+  transform: scale(1.05);
+}
+
+.productname {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.productprice {
+  font-size: 18px;
+  color: #28666e;
+  font-weight: 600;
+}
+
+/* ======= Cart Badge ======= */
+#cartnm,
+#cartnm1 {
+  color: #ffffff;
+  background-color: #ff0000;
+  text-align: center;
+  font-size: 14px;
+  padding-top: 5px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  z-index: 10;
+}
+
+/* ======= Advertisement Section ======= */
+#advertaisment {
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* ======= Running Banner ======= */
+.running-banner {
+  width: 100%;
+  background-color: #4682b4;
+  color: #ffffff;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: scroll 20s linear infinite;
+}
+
+.marquee a {
+  margin-right: 50px;
+  color: #ffffff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.marquee a:hover {
+  text-decoration: underline;
+}
+
+/* ======= Keyframes for Scrolling Animation ======= */
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* ======= Responsive Design ======= */
+@media screen and (max-width: 500px) {
+  #products {
+    flex-direction: column;
+  }
+  .product {
+    width: 90%;
+  }
+  .productname,
+  .productprice {
+    font-size: 16px;
+  }
+  #p {
+    font-size: 24px;
+  }
+  .productimg {
+    width: 100%;
+  }
+}
