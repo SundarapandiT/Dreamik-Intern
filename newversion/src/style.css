@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Spartan:wght@100..900&display=swap");
 * {
   margin: 0;
@@ -5,7 +6,6 @@
   box-sizing: border-box;
   font-family: "Spartan", sans-serif;
 }
-
 h1 {
   font-size: 50px;
   line-height: 64px;
@@ -24,11 +24,24 @@ h6 {
   font-weight: 700;
   font-size: 12px;
 }
-p {
-  font-size: 16px;
-  color: black;
-  margin: 15px 0 20px 0;
+
+.contact-info {
+  font-family: Arial, sans-serif;
+  font-weight: 350;
+  line-height: 1.6;
+  color: #000000;
+  text-align: left;
 }
+
+.contact-info p {
+  margin: 0 0 10px;
+}
+
+.contact-info .indent {
+  display: block;
+  text-indent: 5.2em;
+}
+
 .section-p1 {
   padding: 40px 80px;
 }
@@ -289,76 +302,111 @@ a {
         width: 200px;
     }
  } */
-footer {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
+ 
+ /* Footer Section */
+ footer {
+   background-color: #c5d6e9;
+   font-size: 14px;
+   color: rgb(255, 255, 255);
+   padding: 40px 80px;
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+   gap: 30px;
+ }
+ 
+ footer .logo {
+  margin-bottom: 5px;
+} 
+
+.logo-section{
+   margin-left: 1;
+
 }
-.col1,
 .col2,
 .col3 {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  align-items:baseline;
+  margin-bottom: 10px;
+
 }
-footer .logo {
-  margin-bottom: 30px;
-}
-footer h3 {
-  padding-bottom: 20px;
-}
-footer p {
-  font-size: 20px;
-  margin: 0 0 20px 0;
-}
-footer a {
-  font-style: 20px;
-  text-decoration: none;
-  margin: 0 0 20px 0;
-  color: #222;
-}
-footer .follow {
-  margin-top: 20px;
+ footer h3 {
+   color: #000000;
+   font-size: 18px;
+   margin-bottom: 15px;
+   
+ }
+ 
+ footer a {
+   text-decoration: none;
+   color: rgb(56, 55, 55);
+   font-size: 14px;
+   margin-bottom: 10px;
+   transition: color 0.3s ease;
+ }
+ 
+ footer a:hover {
+   color: #1b345f;
+   font-size: 105%;
+ }
+ 
+ footer .icons {
+   display: flex;
+   gap: 15px;
+ }
+ 
+ footer .icons a,
+ footer .col-install a{
+ 
+   background-color: #444;
+   color: white;
+   width: 40px;
+   height: 40px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   border-radius: 50%;
+   transition: background-color 0.3s ease, transform 0.3s ease;
+ }
+ 
+ footer .icons a:hover ,
+ footer .col-install a:hover{
+   background-color: #1b345f;
+   transform: scale(1.1);
+ }
+
+.icons{
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
-footer .follow i {
-  padding-top: 10px;
-  color: rgb(51, 32, 126);
-  padding-right: 4px;
-  cursor: pointer;
-}
-footer .install button {
-  margin-bottom: 20px;
-  background-color: black;
-  border: none;
-  outline: none;
-  padding: 5px 10px;
-  color: white;
-  width: 150px;
-  font-size: 14px;
-  border-radius: 10px;
-}
-footer ul {
-  display: flex;
-  padding-left: 10px;
-}
-footer li {
-  background-color: black;
-  padding: 10px 15px;
-  color: white;
-  border-radius: 10px;
-  margin-left: 5px;
-}
-.f-2 {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-footer .col a h2 {
-  font-size: 26px;
-}
+/* Sub-Footer */
+  footer.f-2 {
+    background-color: #1b345f;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 12px;
+    color: #ffffff;
+  }  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    footer {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+  
+    footer .logo-section {
+      justify-content: center;
+    }
+  
+    footer .icons {
+      justify-content: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+  }
+
 #product-1 {
   text-align: center;
 }
