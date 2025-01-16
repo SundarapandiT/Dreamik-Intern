@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
-//  import "./NSPersonalize.css";
-//  import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
-
+import "./NSPersonalize.css"
 const NSPersonalize = ({navigateTo}) => {
   const persImgContRef = useRef(null);
   const [brightness, setBrightness] = useState(100); // Default 100% (no change)
@@ -30,6 +28,34 @@ const NSPersonalize = ({navigateTo}) => {
     translateY: 0, // Vertical movement
     mirror: 1,
   });
+  const [subjecttrans, setsubjecttrans] = useState({
+    scale: 1, // Zoom level
+    rotate: 0, // Rotation angle
+    translateX: 0, // Horizontal movement
+    translateY: 0, // Vertical movement
+    mirror: 1,
+  });
+  const [rollnotrans, setrollnotrans] = useState({
+    scale: 1, // Zoom level
+    rotate: 0, // Rotation angle
+    translateX: 0, // Horizontal movement
+    translateY: 0, // Vertical movement
+    mirror: 1,
+  });
+  const [sectiontrans, setsectiontrans] = useState({
+    scale: 1, // Zoom level
+    rotate: 0, // Rotation angle
+    translateX: 0, // Horizontal movement
+    translateY: 0, // Vertical movement
+    mirror: 1,
+  });
+  const [classtrans, setclasstrans] = useState({
+    scale: 1, // Zoom level
+    rotate: 0, // Rotation angle
+    translateX: 0, // Horizontal movement
+    translateY: 0, // Vertical movement
+    mirror: 1,
+  });
   // State for student details
   const [studentDetails, setStudentDetails] = useState({
     name: "",
@@ -49,7 +75,7 @@ const NSPersonalize = ({navigateTo}) => {
   // Handle input changes
   useEffect(() => {
         const fetchData = async () => {
-          const url = '../nameslip_data.json';
+          const url = '/nameslip_data.json';
           try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -142,7 +168,18 @@ const NSPersonalize = ({navigateTo}) => {
   const updatetransformschool = (type, value) => {
     setschooltrans((prev) => ({ ...prev, [type]: prev[type] + value }));
   };
-
+  const updatetransformsubject = (type, value) => {
+    setsubjecttrans((prev) => ({ ...prev, [type]: prev[type] + value }));
+  };
+  const updatetransformrollno = (type, value) => {
+    setrollnotrans((prev) => ({ ...prev, [type]: prev[type] + value }));
+  };
+  const updatetransformsection = (type, value) => {
+    setsectiontrans((prev) => ({ ...prev, [type]: prev[type] + value }));
+  };
+  const updatetransformclass = (type, value) => {
+    setclasstrans((prev) => ({ ...prev, [type]: prev[type] + value }));
+  };
   const toggleMirror = () => {
     setTransformations((prev) => ({
       ...prev,
@@ -194,21 +231,58 @@ const NSPersonalize = ({navigateTo}) => {
     }
   };
   const handlehideschoolname = () => {
-    if (
-      document.getElementById("schoolnamecustomizediv").style.display ===
-      "block"
-    ) {
+    if (document.getElementById("schoolnamecustomizediv").style.display ==="block") {
       document.getElementById("schoolnamecustomizediv").style.display = "none";
     } else {
       document.getElementById("schoolnamecustomizediv").style.display = "block";
     }
   };
+  const handlehideSubject = () => {
+    if (
+      document.getElementById("subjectcustomizediv").style.display ===
+      "block"
+    ) {
+      document.getElementById("subjectcustomizediv").style.display = "none";
+    } else {
+      document.getElementById("subjectcustomizediv").style.display = "block";
+    }
+  };
+  const handlehideRollno = () => {
+    if (
+      document.getElementById("rollcustomizediv").style.display ===
+      "block"
+    ) {
+      document.getElementById("rollcustomizediv").style.display = "none";
+    } else {
+      document.getElementById("rollcustomizediv").style.display = "block";
+    }
+  };
+  const handlehidesection = () => {
+    if (
+      document.getElementById("sectioncustomizediv").style.display ==="block") {
+      document.getElementById("sectioncustomizediv").style.display = "none";
+    } else {
+      document.getElementById("sectioncustomizediv").style.display = "block";
+    }
+  };
+  const handlehideclass = () => {
+    if (
+      document.getElementById("classcustomizediv").style.display ===
+      "block"
+    ) {
+      document.getElementById("classcustomizediv").style.display = "none";
+    } else {
+      document.getElementById("classcustomizediv").style.display = "block";
+    }
+  };
   return (
     <div className="personalizecontainer">
       <div className="pers-img-cont" ref={persImgContRef}>
+        <div className='stickerdiv'>
         <img
           src={product.source}
           alt="productImage"
+          
           className="personalise-Image"
         />
         <img
@@ -223,6 +297,7 @@ const NSPersonalize = ({navigateTo}) => {
           }}
           className="personImage"
         />
+        </div>
         <label
           className="studentname-lab"
           onClick={updateTransforminput}
@@ -249,11 +324,14 @@ const NSPersonalize = ({navigateTo}) => {
           {studentDetails.schoolName}
         </label>
         <label
+          
           className="subjectname-lab"
           style={{
             fontSize: `${fontSize}px`,
             color: fontColor,
             fontFamily: fontFamily,
+            transform: `scale(${subjecttrans.scale}) rotate(${subjecttrans.rotate}deg) translate(${subjecttrans.translateX}px, ${subjecttrans.translateY}px) scaleX(${subjecttrans.mirror})`,
+            transition: "transform 0.2s",
           }}
         >
           {studentDetails.subject}
@@ -264,6 +342,8 @@ const NSPersonalize = ({navigateTo}) => {
             fontSize: `${fontSize}px`,
             color: fontColor,
             fontFamily: fontFamily,
+            transform: `scale(${rollnotrans.scale}) rotate(${rollnotrans.rotate}deg) translate(${rollnotrans.translateX}px, ${rollnotrans.translateY}px) scaleX(${rollnotrans.mirror})`,
+            transition: "transform 0.2s",
           }}
         >
           {studentDetails.rollNumber}
@@ -274,6 +354,8 @@ const NSPersonalize = ({navigateTo}) => {
             fontSize: `${fontSize}px`,
             color: fontColor,
             fontFamily: fontFamily,
+            transform: `scale(${sectiontrans.scale}) rotate(${sectiontrans.rotate}deg) translate(${sectiontrans.translateX}px, ${sectiontrans.translateY}px) scaleX(${sectiontrans.mirror})`,
+            transition: "transform 0.2s",
           }}
         >
           {studentDetails.section}
@@ -284,19 +366,21 @@ const NSPersonalize = ({navigateTo}) => {
             fontSize: `${fontSize}px`,
             color: fontColor,
             fontFamily: fontFamily,
+            transform: `scale(${classtrans.scale}) rotate(${classtrans.rotate}deg) translate(${classtrans.translateX}px, ${classtrans.translateY}px) scaleX(${classtrans.mirror})`,
+            transition: "transform 0.2s",
           }}
         >
           {studentDetails.class}
         </label>
       </div>
-
+      
       <div className="controllize-container">
         <div id="buttonscontrol">
           <label htmlFor="select-image" id="sel-img-btn">
             select image
           </label>
           <button id="editImage" onClick={handlecustomImage}>
-            <img src="/images/custamize.png" width={"25px"} alt="" />
+            <img src="/image/custamize.png" width={"25px"} alt="" />
           </button>
           <input
             type="file"
@@ -420,7 +504,7 @@ const NSPersonalize = ({navigateTo}) => {
             </button>
           </div>
           <img
-            src="/images/custamize.png"
+            src="/image/custamize.png"
             width={"25px"}
             alt=""
             onClick={handlehidename}
@@ -467,8 +551,9 @@ const NSPersonalize = ({navigateTo}) => {
             </button>
           </div>
           <img
-            src="/images/custamize.png"
+            src="/image/custamize.png"
             alt=""
+            width={"25px"}
             onClick={handlehideschoolname}
             className="custamlogo"
           />
@@ -476,6 +561,7 @@ const NSPersonalize = ({navigateTo}) => {
             Other Details
           </button>
           <div id="OD">
+          <div className='img-cus'>
             <input
               type="text"
               name="subject"
@@ -484,7 +570,41 @@ const NSPersonalize = ({navigateTo}) => {
               onChange={handleInputChange}
               className="studentDetails"
             />
-            <img src="/images/custamize.png" alt="" className="custamlogo" />
+            <div id="subjectcustomizediv">
+            <button
+              className="zoom-in"
+              onClick={() => updatetransformsubject("scale", 0.1)}
+            >
+              zoom in
+            </button>
+            <button onClick={() => updatetransformsubject("scale", -0.1)}>
+              zoom out
+            </button>
+            <button onClick={() => updatetransformsubject("rotate", 10)}>
+              tilt left
+            </button>
+            <button onClick={() => updatetransformsubject("rotate", -10)}>
+              tilt right
+            </button>
+            <button onClick={() => updatetransformsubject("rotate", 180)}>
+              Upside Down
+            </button>
+            <button onClick={() => updatetransformsubject("translateY", -10)}>
+              up
+            </button>
+            <button onClick={() => updatetransformsubject("translateY", 10)}>
+              down
+            </button>
+            <button onClick={() => updatetransformsubject("translateX", -10)}>
+              left
+            </button>
+            <button onClick={() => updatetransformsubject("translateX", 10)}>
+              right
+            </button>
+          </div>
+            <img src="/image/custamize.png" alt="" className="custamlogo"  width={"25px"} onClick={handlehideSubject}/>
+            </div>
+            <div className='img-cus'>
             <input
               type="text"
               name="rollNumber"
@@ -493,12 +613,48 @@ const NSPersonalize = ({navigateTo}) => {
               onChange={handleInputChange}
               className="studentDetails"
             />
+            <div id="rollcustomizediv">
+            <button
+              className="zoom-in"
+              onClick={() => updatetransformrollno("scale", 0.1)}
+            >
+              zoom in
+            </button>
+            <button onClick={() => updatetransformrollno("scale", -0.1)}>
+              zoom out
+            </button>
+            <button onClick={() => updatetransformrollno("rotate", 10)}>
+              tilt left
+            </button>
+            <button onClick={() => updatetransformrollno("rotate", -10)}>
+              tilt right
+            </button>
+            <button onClick={() => updatetransformrollno("rotate", 180)}>
+              Upside Down
+            </button>
+            <button onClick={() => updatetransformrollno("translateY", -10)}>
+              up
+            </button>
+            <button onClick={() => updatetransformrollno("translateY", 10)}>
+              down
+            </button>
+            <button onClick={() => updatetransformrollno("translateX", -10)}>
+              left
+            </button>
+            <button onClick={() => updatetransformrollno("translateX", 10)}>
+              right
+            </button>
+          </div>
             <img
-              src="/images/custamize.png"
+              src="/image/custamize.png"
               width={"25px"}
               alt=""
               className="custamlogo"
+              onClick={handlehideRollno}
             />
+            </div>
+
+            <div className='img-cus'>
             <input
               type="text"
               name="section"
@@ -507,12 +663,47 @@ const NSPersonalize = ({navigateTo}) => {
               onChange={handleInputChange}
               className="studentDetails"
             />
+            <div id="sectioncustomizediv">
+            <button
+              className="zoom-in"
+              onClick={() => updatetransformsection("scale", 0.1)}
+            >
+              zoom in
+            </button>
+            <button onClick={() => updatetransformsection("scale", -0.1)}>
+              zoom out
+            </button>
+            <button onClick={() => updatetransformsection("rotate", 10)}>
+              tilt left
+            </button>
+            <button onClick={() => updatetransformsection("rotate", -10)}>
+              tilt right
+            </button>
+            <button onClick={() => updatetransformsection("rotate", 180)}>
+              Upside Down
+            </button>
+            <button onClick={() => updatetransformsection("translateY", -10)}>
+              up
+            </button>
+            <button onClick={() => updatetransformsection("translateY", 10)}>
+              down
+            </button>
+            <button onClick={() => updatetransformsection("translateX", -10)}>
+              left
+            </button>
+            <button onClick={() => updatetransformsection("translateX", 10)}>
+              right
+            </button>
+          </div>
             <img
-              src="/images/custamize.png"
+              src="/image/custamize.png"
               width={"25px"}
               alt=""
               className="custamlogo"
+              onclick={handlehidesection}
             />
+            </div>
+            <div className='img-cus'>
             <input
               type="text"
               name="class"
@@ -521,13 +712,47 @@ const NSPersonalize = ({navigateTo}) => {
               onChange={handleInputChange}
               className="studentDetails"
             />
+             <div id="classcustomizediv">
+            <button
+              className="zoom-in"
+              onClick={() => updatetransformclass("scale", 0.1)}
+            >
+              zoom in
+            </button>
+            <button onClick={() => updatetransformclass("scale", -0.1)}>
+              zoom out
+            </button>
+            <button onClick={() => updatetransformclass("rotate", 10)}>
+              tilt left
+            </button>
+            <button onClick={() => updatetransformclass("rotate", -10)}>
+              tilt right
+            </button>
+            <button onClick={() => updatetransformclass("rotate", 180)}>
+              Upside Down
+            </button>
+            <button onClick={() => updatetransformclass("translateY", -10)}>
+              up
+            </button>
+            <button onClick={() => updatetransformclass("translateY", 10)}>
+              down
+            </button>
+            <button onClick={() => updatetransformclass("translateX", -10)}>
+              left
+            </button>
+            <button onClick={() => updatetransformclass("translateX", 10)}>
+              right
+            </button>
+            </div>
             <img
-              src="/images/custamize.png"
+              src="/image/custamize.png"
               width={"25px"}
               alt=""
               className="custamlogo"
+              onClick={handlehideclass}
             />
-          </div>
+            </div>
+          </div >
           <div id="fontcenter">
             <div>
               <button
@@ -569,7 +794,7 @@ const NSPersonalize = ({navigateTo}) => {
               min={1}
               value={quantity}
               onChange={handlePrice}
-              style={{ width: "30px" }}
+              style={{ width: "50px" }}
             />
             <br />
             <button id="add">Add to cart</button>
