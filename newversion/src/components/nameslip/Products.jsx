@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-const ProductDetails = ({ navigateTo }) => {
+const Products = () => {
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const url = '../cutoutnameslip_data.json';
+      const url = '../nameslip_data.json';
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -33,11 +33,9 @@ const ProductDetails = ({ navigateTo }) => {
 
   const handlePersonalizeAndAddToCart = () => {
     if (product) {
-      localStorage.setItem('product', JSON.stringify(product));
-      navigateTo('Template');
+      window.location.href = `${product.template}.html`;
     }
   };
-  
 
   if (!product) {
     return <div>Loading...</div>;
@@ -66,4 +64,4 @@ const ProductDetails = ({ navigateTo }) => {
   );
 };
 
-export default ProductDetails;
+export default Products;

@@ -31,12 +31,16 @@ const ProductList = ({ navigateTo }) => {
 
   // Handle product click
   const handleProductClick = (product) => {
-    if (product.name === 'Cutout Nameslip') {
-      navigateTo('CutOutNameSlip');
-    } else {
-      alert('Other product clicked!');
-    }
-  };
+  const view = product.name.replace(/\s+/g, '');
+  console.log(view);
+  
+  if (view) {
+    navigateTo(view);
+  } else {
+    console.log('Product not found:', product.name);
+  }
+};
+
 
   // Render product samples dynamically
   const renderProductSamples = (productData) => {
@@ -55,7 +59,7 @@ const ProductList = ({ navigateTo }) => {
   
         // Create sample image
         const sampleimg = document.createElement('img');
-        sampleimg.src = product.image;
+        sampleimg.src = product.logo;
         sampleimg.className = 'sampleimg';
         sampleimg.loading = 'lazy';
   
@@ -80,6 +84,8 @@ const ProductList = ({ navigateTo }) => {
         // Append elements
         prod.appendChild(sampleimg);
         prod.appendChild(title);
+        prod.onclick = () => handleProductClick(product);
+
         psample.appendChild(prod);
       }
     });
