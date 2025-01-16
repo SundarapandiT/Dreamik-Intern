@@ -11,6 +11,7 @@ export default defineConfig({
         '@fortawesome/free-solid-svg-icons',
         '@fortawesome/free-brands-svg-icons',
         '@fortawesome/fontawesome-svg-core',
+        'jszip',
       ],
     },
   },
