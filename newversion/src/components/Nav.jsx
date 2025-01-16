@@ -48,6 +48,10 @@ function Navbar({ cartCount, navigateTo }) {
               <ResellerLogin onClose={() => setShowResellerLogin(false)} />
             )}
           </li>
+          <li className="active" onClick={() => navigateTo('BulkOrder')}>
+          <h3 id="bulk-order" style={{ cursor: 'pointer' }}>Bulk-Order</h3>
+          </li>
+
           <li>
             <input type="text" placeholder="Search..." id="search" />
           </li>
@@ -64,3 +68,4 @@ function Navbar({ cartCount, navigateTo }) {
 }
 
 export default Navbar;
+
