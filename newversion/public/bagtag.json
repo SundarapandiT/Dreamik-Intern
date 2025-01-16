@@ -1,0 +1,14 @@
+{   
+    "name":"Custamizable Bagtag",
+    "price":250,
+    "productcode":"a2d699",
+    "images":{
+        "Study Theme":"/image/bagtag_image/bg4.jpeg",
+        "India UK Theme":"/image/bagtag_image/bg1.jpeg",
+        "Flight Theme":"/image/bagtag_image/bg2.jpeg",
+        "Pink Theme":"/image/bagtag_image/bg3.jpeg",
+        "Blue Theme":"/image/bagtag_image/bg5.jpeg",
+        "India Theme":"/image/bagtag_image/bg6.jpeg"
+    }
+    
+}
