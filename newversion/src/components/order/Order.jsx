@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import "./Order.css"
+import "./Order.css";
 
 const Order = () => {
   const [orderData, setOrderData] = useState([]);
@@ -162,22 +162,23 @@ const Order = () => {
 
         <div id="form-container">
           <h2 className="topic">Delivery Details</h2>
-          <div id="address-form">
-            <label for="name">Name: <span className="astrics">*</span></label>
-            <input type="text" id="name" name="name" required />
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required />
-            <label for="phone">Phone Number: <span className="astrics">*</span></label>
-            <input type="tel" id="phone" name="phone" required />
-            <label for="address1">Address Line 1: <span className="astrics">*</span></label>
-            <input type="text" id="address1" name="address1" required />
-            <label for="pincode">Pincode: <span className="astrics">*</span></label>
-            <input type="text" id="pincode" name="pincode" maxlength="6" required />
-            <button id="proceedtopay" onClick={handleProceedToPayment}>
-              Proceed To Payment
-            </button>
-          </div>
+        <div id="address-form">
+          <label htmlFor="name">Name: <span className="astrics">*</span></label>
+          <input type="text" id="name" name="name" required />
+          <label htmlFor="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+          <label htmlFor="phone">Phone Number: <span className="astrics">*</span></label>
+          <input type="tel" id="phone" name="phone" required />
+          <label htmlFor="address1">Address Line 1: <span className="astrics">*</span></label>
+          <input type="text" id="address1" name="address1" required />
+          <label htmlFor="pincode">Pincode: <span className="astrics">*</span></label>
+          <input type="text" id="pincode" name="pincode" maxLength="6" required />
+          <button id="proceedtopay" onClick={handleProceedToPayment}>
+            Proceed To Payment
+          </button>
         </div>
+      </div>
+
       </div>
     </div>
   );

@@ -168,7 +168,7 @@ const BulkOrder = () => {
     };
 
     return (
-        <div>
+        <div className='--bulkorder'>
             <h1>Kids Label Generator</h1>
             <div id="uploadSection">
                 <label htmlFor="bgImage">Upload Background Image:</label>

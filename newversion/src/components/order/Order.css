@@ -1,329 +1,227 @@
-body {
-  background: linear-gradient(
-    to bottom right,
-    #ffffff,
-    /* Pure White */ #f0f8ff,
-    /* Alice Blue - Very Light Blue */ #e0f2f1,
-    /* Soft Teal Tint */ #e8f5e9
-  ); /* Very Light Green */
-  color: #333333; /* Dark Gray for readability */
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
+/* General Layout */
 #container {
-  width: 90vw;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-#product-display {
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  align-items: center;
-}
-
-.product-container {
-  width: 80%;
-  margin: 30px;
-  margin-bottom: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1),
-    /* Bottom shadow */ 0px -4px 6px rgba(0, 0, 0, 0.1),
-    /* Top shadow */ 4px 0px 6px rgba(0, 0, 0, 0.1),
-    /* Right shadow */ -4px 0px 6px rgba(0, 0, 0, 0.1); /* Left shadow */
-  padding: 10px;
-  transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.product-container:hover {
-  transform: scale(1.05);
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
-}
-
-.prod-image {
-  width: 90%;
-}
-
-.prod-name,
-.prod-price,
-.prod-type,
-.prod-qtn,
-.prod-sheet {
-  font-size: 18px;
-  color: black;
-  margin: -10px;
-  margin-left: 10px;
-  padding: 0px;
-}
-
-.prod-sheet {
-  margin-top: 5px;
-}
-
-.prod-remove {
-  width: 100px;
-  height: 30px;
-  background-color: rgb(227, 34, 34);
-  color: white;
-  border-radius: 4px;
-  border: 1px white;
-  margin-top: 20px;
-  transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
-}
-
-.prod-remove:hover {
-  transform: scale(1.1);
-  background-color: #e74c3c;
-}
-
-#addprod {
-  width: 200px;
-  height: 35px;
-  background-color: green;
-  border-radius: 5px;
-  font-size: 18px;
-  color: white;
-  transition: transform 0.2s ease-in-out, background-color 0.3s ease-in-out;
-}
-
-#addprod:hover {
-  transform: scale(1.1);
-  background-color: #28a745;
-}
-
-.topic {
-  font-size: 21px;
-  color: #0006b3;
-}
-
-#options {
-  display: flex;
-  flex-direction: row;
-  width: 900px;
-}
-
-.mode {
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.mode > label > input {
-  margin: 4px;
-}
-
-.mode > label {
-  margin: 2px;
-  margin-right: 10px;
-  font-weight: 600;
-}
-
-#reseller_selection {
-  margin: 20px;
-}
-
-#price {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-}
-
-#price > h3 {
-  margin: 10px;
-  font-weight: 600;
-}
-
-#price > h3 > span {
-  color: #0006b3;
-  animation: highlightText 1.5s ease-out;
-}
-
-@keyframes highlightText {
-  0% {
-    color: #0006b3;
-  }
-  50% {
-    color: #ff5722;
-  }
-  100% {
-    color: #0006b3;
-  }
-}
-
-#user-details {
-  width: 60%;
-}
-
-#form-container,
-#delivery,
-#price {
-  width: 90%;
-  margin: auto;
+  justify-content: space-between;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  background-color: #f9f9f9;
-  margin: 10px;
-  opacity: 0;
-  animation: fadeIn 1s forwards;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
+#container #product-display {
+  width: 45%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#container .product-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#container .prod-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+#container .prod-name,
+#container .prod-price,
+#container .prod-qtn,
+#container .prod-type,
+#container .prod-sheet {
+  margin: 5px 0;
+}
+
+#container .prod-remove {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#container .prod-remove:hover {
+  background-color: #e63939;
+}
+
+#container #addprod {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  align-self: center;
+}
+
+#container #addprod:hover {
+  background-color: #0056b3;
+}
+
+/* User Details */
+#container #user-details {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+  box-sizing: border-box; /* Ensures padding is included in width calculation */
+}
+
+#container #options {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+#container #delivery {
+  width: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: whitesmoke;
+}
+
+#container #delivery label {
+  padding: 10px;
+  display: block; /* Ensures labels occupy their space properly */
+  font-size: 14px; /* Slightly smaller font for a clean layout */
+}
+
+#container #price {
+  width: auto;
+  height: fit-content;
+  display: block;
+  padding: 20px;
+  background-color: #f8f9fa; /* Light background color */
+  border-radius: 8px; /* Rounded corners */
+  border: 1px solid #ddd; /* Lighter border for distinction */
+  color: #111813; /* Text color */
+}
+
+#container #price .topic {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px; /* Space between title and payment details */
+}
+
+#container #price h3 {
+  font-size: 16px; /* Font size for payment details */
+  margin-bottom: 10px; /* Space between each line */
+  color: #111813; /* Text color */
+}
+
+#container #price #delivery-charge-h3 {
+  color: #28a745; /* Green color for delivery and CoD charges */
+}
+#container #price #cod-charge-h3{
+  display: none;
+}
+
+#container #price h3:last-child {
+  font-weight: bold;
+  color: #007bff; /* Blue color for total payment */
+}
+
+#container #price .price-detail {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+#container #price .price-detail span {
+  font-size: 16px;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #container #user-details {
+    width: 100%; /* Adjust to full width on smaller screens */
+    padding: 10px;
+  }
+
+  #container #options {
+    flex-direction: column; /* Stack options vertically */
+    gap: 15px; /* Reduce gap slightly for better compactness */
+  }
+
+  #container #delivery,
+  #container #price {
+    width: 100%; /* Full width for individual sections */
+    text-align: left; /* Align text to the left */
+  }
+
+  #container #price {
+    background-color: #e9f7e7; /* Light green background for price section */
+    color: #1b3020; /* Keep the green text for consistency */
   }
 }
 
-#delivery-charge,
-#delivery-charge-h3 {
-  font-size: 16px;
+
+/* Form Container */
+#container #form-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
-#cod-charge-h3 {
-  display: none;
-  font-size: 16px;
-}
-
-#forselect {
-  display: none;
-  width: 180px;
-  height: 30px;
-  font-size: 16px;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-weight: 500;
-  box-shadow: inset 0px 1px 2px rgb(209, 209, 252);
-}
-
-#form-container label {
+#container #address-form label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin: 10px 0 5px;
 }
 
-#form-container input {
+#container #address-form input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  box-shadow: inset 0px 2px 6px rgb(209, 209, 252);
 }
 
-#form-container button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: #fff;
+#container #proceedtopay {
+  padding: 12px 20px;
+  background-color: #28a745;
+  color: white;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-#form-container button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+#container #proceedtopay:hover {
+  background-color: #218838;
 }
 
-#coupon {
-  width: 260px;
-  height: 30px;
-  margin: 5px;
-  padding: 8px;
-  border: 1px solid #444343;
-  border-radius: 5px;
-  box-shadow: inset 0px 2px 6px rgb(209, 209, 252);
-  font-size: 15px;
-  transition: background-color 0.3s ease;
-}
-
-#coupon:hover {
-  background-color: #f0f0f0;
-  box-shadow: inset 0px 1px 5px rgba(0, 0, 0, 0.1);
-}
-
-#submitcoupon {
-  width: 150px;
-  height: 35px;
-  margin: 5px;
-  background-color: #20b2aa;
-  color: white;
-  font-size: 17px;
-  text-align: center;
-  border-radius: 5px;
-}
-
-#delivery {
-  width: 60%;
-}
-
-#price {
-  width: 35%;
-}
-
-#message {
-  font-size: 15px;
-}
-
-#address-form-reseller {
-  display: none;
-}
-
-.astrics {
-  color: red;
-  font-size: 20px;
-}
-
-/* Media Query for Small Screens */
-@media screen and (max-width: 500px) {
+/* Responsive Design */
+@media (max-width: 768px) {
   #container {
     flex-direction: column;
-    width: 100vw;
   }
-  
-  #product-display {
-    width: 95%;
+
+  #container #product-display,
+  #container #user-details {
+    width: 100%;
   }
-  
-  #user-details {
-    width: 95%;
+
+  #container #options {
+    flex-direction: column;
   }
-  
-  #options {
-    width: 400px;
-    flex-wrap: wrap;
-    margin-top: 40px;
-  }
-  
-  #delivery,
-  #price {
-    width: 80%;
-  }
-  
-  #price > h3 {
-    font-size: 15px;
-  }
-  
-  .mode > label {
-    font-size: 15px;
-  }
-  
-  .prod-name,
-  .prod-price,
-  .prod-type,
-  .prod-qtn,
-  .prod-sheet {
-    margin: 0px;
+
+  #container #delivery,
+  #container #price {
+    width: 100%;
+    text-align: left;
   }
 }

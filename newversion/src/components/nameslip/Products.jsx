@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const Products = () => {
+const Products = ({ navigateTo }) => {
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
@@ -31,11 +31,12 @@ const Products = () => {
     loadProductDetails();
   }, []);
 
-  const handlePersonalizeAndAddToCart = () => {
-    if (product) {
-      window.location.href = `${product.template}.html`;
-    }
-  };
+  const handlePersonalizeAndAddToCart = (id) => {
+    
+      localStorage.setItem('keyid', id);
+      navigateTo('NSPersonalize');  // Navigate to NSPersonalize view
+    };
+  
 
   if (!product) {
     return <div>Loading...</div>;
@@ -56,7 +57,7 @@ const Products = () => {
         <br />
         <span>{product.props.join(', ')}</span>
         <br />
-        <button className="P-btn" id="targetbtn" onClick={handlePersonalizeAndAddToCart}>
+        <button className="P-btn" id="targetbtn" onClick={() => handlePersonalizeAndAddToCart(product.id)} >
           Personalize and Add To Cart
         </button>
       </div>

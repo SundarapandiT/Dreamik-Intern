@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import "./personal-style.css";
+// import "./personal-style.css";
 
 const Template = () => {
   

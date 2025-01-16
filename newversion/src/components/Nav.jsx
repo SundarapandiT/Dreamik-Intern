@@ -3,7 +3,7 @@ import ResellerLogin from './ResellerLogin';
 import logo from '../assets/logo.png';
 import menuIcon from '../assets/menu.png';
 import cartLogo from '../assets/cartlogo1.png';
-import "../style.css";
+// import "../style.css";
 
 function Navbar({ cartCount, navigateTo }) {
   const [menuOpen, setMenuOpen] = useState(false);

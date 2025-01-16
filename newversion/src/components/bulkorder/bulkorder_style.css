@@ -1,22 +1,21 @@
-body {
+.--bulkorder body {
     font-family: Arial, sans-serif;
     text-align: center;
     background-color: #f4f4f4;
 }
 
-h1 {
+.--bulkorder h1 {
     color: #333;
     margin-top: 10px;
 }
 
-
-label {
+.--bulkorder label {
     font-size: 1px;
     display: block;
     margin: 10px 0;
 }
 
-input {
+.--bulkorder input {
     margin: 10px 0;
     padding: 8px;
     width: 300px;
@@ -24,7 +23,7 @@ input {
     border: 1px solid #ccc;
 }
 
-button {
+.--bulkorder button {
     background-color: #007bff;
     color: #fff;
     padding: 10px 20px;
@@ -34,36 +33,37 @@ button {
     margin-top: 10px;
 }
 
-button:hover {
+.--bulkorder button:hover {
     background-color: #0056b3;
 }
-canvas {
+
+.--bulkorder canvas {
     border: 1px solid #000000;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     margin: 10px;
 }
 
-#canvasContainer {
+.--bulkorder #canvasContainer {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: space-between;
 }
 
-#canvasContainer > label {
-    flex: 1 1 30%;  /* This makes each label take 30% of the available space */
+.--bulkorder #canvasContainer > label {
+    flex: 1 1 30%; /* This makes each label take 30% of the available space */
     box-sizing: border-box;
 }
 
 /* Make sure the labels don't become too small on very narrow screens */
 @media (max-width: 768px) {
-    #canvasContainer > label {
-        flex: 1 1 45%;  /* 45% of space on smaller screens */
+    .--bulkorder #canvasContainer > label {
+        flex: 1 1 45%; /* 45% of space on smaller screens */
     }
 }
 
 @media (max-width: 480px) {
-    #canvasContainer > label {
-        flex: 1 1 100%;  /* 100% of space on very small screens */
+    .--bulkorder #canvasContainer > label {
+        flex: 1 1 100%; /* 100% of space on very small screens */
     }
 }

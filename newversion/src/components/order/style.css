@@ -1,8 +1,6 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Spartan:wght@100..900&display=swap");
 * {
-
-  
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -312,7 +310,7 @@ a {
    color: rgb(255, 255, 255);
    padding: 40px 80px;
    display: grid;
-   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
    gap: 30px;
  }
  
@@ -331,6 +329,9 @@ a {
   align-items:baseline;
   margin-bottom: 10px;
 
+}
+footer h2{
+  font-size: 20px;
 }
  footer h3 {
    color: #000000;
