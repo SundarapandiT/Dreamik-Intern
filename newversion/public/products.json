@@ -13,7 +13,7 @@
   },
   "Cutout Nameslip": {
     "name": "Cutout Nameslip",
-    "image": "image/cutout_nameslip/image.png",
+    "image": "/image/cutout_nameslip/image.png",
     "productcode": "5e10bf",
     "price": 100.0,
     "status": 1,
