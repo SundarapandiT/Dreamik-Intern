@@ -12,6 +12,7 @@ export default defineConfig({
         '@fortawesome/free-brands-svg-icons',
         '@fortawesome/fontawesome-svg-core',
         'jszip',
+        'html2canvas',
       ],
     },
   },
