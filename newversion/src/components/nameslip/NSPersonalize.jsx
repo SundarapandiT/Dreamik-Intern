@@ -1,5 +1,5 @@
 import React, { useContext,useState, useEffect, useRef } from 'react';
-import html2canvas from 'html2canvas';
+// import html2canvas from 'html2canvas';
 import "./NSPersonalize.css"
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../CartContext';
