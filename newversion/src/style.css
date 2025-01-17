@@ -411,6 +411,9 @@ a {
 
 #product-1 {
   text-align: center;
+  padding: 20px 80px;
+  margin-bottom: 40px;
+
 }
 #product-1 .pro-container {
   display: flex;
@@ -418,7 +421,7 @@ a {
   gap: 2vw;
   padding-top: 20px;
   flex-wrap: wrap;
-  background-color: #ebf2fc;
+  /* background-color: #ebf2fc; */
   padding: 20px;
 }
 #product-1 .pro {
@@ -426,16 +429,17 @@ a {
   min-width: 250px;
   padding: 10px 12px;
   border: 1px solid #cce7d0;
-  border-radius: 25px;
+  border-radius: 20px;
   cursor: pointer;
   box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.02);
   margin: 15px 0;
   transition: 0.2s ease;
   position: relative;
-  background-color: white;
+  background-color: #c7edce;
 }
 #product-1 .pro:hover {
-  box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.06);
+  box-shadow: 20px 20px 20px #2f5335;
+  transform: scale(1.05);
 }
 #product-1 .pro img {
   width: 100%;
@@ -447,22 +451,26 @@ a {
 }
 #product-1 .pro .description span {
   color: #606063;
-  font-size: 14px;
+  font-size: 12px;
 }
 #product-1 .pro .description h5 {
   padding-top: 10px;
-  color: #1a1a1a;
-  font-size: 18px;
+  color: #4d4b4b;
+  font-size: 13px;
+  font-weight: 700;
 }
 #product-1 .pro .description i {
-  font-size: 14px;
-  color: rgb(243, 181, 25);
+  font-size: 11px;
+  color: rgb(255, 209, 93);
 }
+
+
 #product-1 .pro .description h4 {
   padding-top: 7px;
   font-size: 16px;
-  font-weight: 700;
-  color: rgb(51, 32, 126);
+  font-weight: 600;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: rgb(220, 39, 39);
 }
 #product-1 .pro a i {
   width: 40px;
@@ -474,8 +482,8 @@ a {
   color: rgb(51, 32, 126);
   border: 1px solid #cce7d0;
   position: absolute;
-  bottom: 20px;
-  right: 10px;
+  bottom: 16px;
+  right: 14px;
 }
 #pagination {
   text-align: center;
@@ -506,7 +514,7 @@ a {
 }
 #prodetails .single-pro-image {
   width: 40%;
-  margin-right: 50px;
+  margin-right: 60px;
 }
 #prodetails {
   margin-right: 0px;
@@ -523,10 +531,14 @@ a {
   width: 50%;
 }
 #prodetails .single-pro-details h4 {
-  padding: 40px 0 20px 0;
+  padding: 20px 0 20px 0;
 }
 #prodetails .single-pro-details h2 {
-  font-size: 26px;
+  padding-top: 7px;
+  font-size: 30px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: rgb(220, 39, 39);
 }
 #prodetails .single-pro-details select {
   display: block;
@@ -560,14 +572,16 @@ a {
 .P-btn {
   width: 300px;
   height: 55px;
-  background-color: rgb(51, 32, 126);
-  border: none;
-  outline: none;
+  background-color: #1b345f;
   padding: 10px 15px;
   color: white;
-  font-size: 16px;
-  border-radius: 32px;
+  font-size: 11px;
+  border-radius: 31px;
   font-weight: bold;
+}
+.P-btn:hover {
+  background-color: #9eb7e2;
+  color: #000000;
 }
 #properties {
   width: 100%;
