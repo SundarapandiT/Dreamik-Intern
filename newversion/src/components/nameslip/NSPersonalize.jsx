@@ -163,7 +163,7 @@ const NSPersonalize = () => {
       if (persImgContRef.current) {
         try {
           // Convert the div to an image using html2canvas
-          const canvas = await html2canvas(persImgContRef.current);
+          const canvas = await window.html2canvas(persImgContRef.current);
           const imageData = canvas.toDataURL('image/png'); // Export as a Base64 image
       
           // Ensure price and quantity are being passed correctly
@@ -297,7 +297,7 @@ const NSPersonalize = () => {
       return;
     }
 
-    html2canvas(element)
+    window.html2canvas(element)
       .then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
         const link = document.createElement("a");
