@@ -55,9 +55,9 @@ const Nameslip = () => {
                 <i className="fas fa-star"></i>
                 <i className="fas fa-star"></i>
               </div>
-              <h4>Rs.{product.price}</h4>
+              <h4>₹{product.price}</h4>
             </div>
-            <a href="#" className="cart">
+            <a href="#" className="cart" onClick={()=>{navigate(`/NSPersonalize/:${id}`)}}>
               <i className="fa-solid fa-cart-shopping"></i>
             </a>
           </div>
