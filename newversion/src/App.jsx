@@ -17,7 +17,7 @@ import NSPersonalize from './components/nameslip/NSPersonalize';
 import BulkOrder from './components/bulkorder/BulkOrder'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 function App() {
-  const [cartCount, setCartCount] = useState(0);
+  // const [cartCount, setCartCount] = useState(0);
   const [showResellerLogin, setShowResellerLogin] = useState(false);
 
 
@@ -27,7 +27,7 @@ function App() {
   return (
     <>
        <Router>
-      <Navbar cartCount={cartCount} />
+      <Navbar/>
       <Advertisement />
       <Routes>
         <Route path="/" element={<ProductList />} />

@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useContext,useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import "./NSPersonalize.css"
 import { useNavigate } from 'react-router-dom';
+import { CartContext } from '../CartContext';
 
 const NSPersonalize = () => {
   const persImgContRef = useRef(null);
   const navigate=useNavigate();
   const [brightness, setBrightness] = useState(100); // Default 100% (no change)
   const [contrast, setContrast] = useState(100); // Default 100% (no change)
-
+  const { addToCart, cartCount } = useContext(CartContext);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [transformations, setTransformations] = useState({
@@ -89,6 +90,13 @@ const NSPersonalize = () => {
   const [fontFamily, setFontFamily] = useState("Arial");
   const [quantity, setQuantity] = useState(1);
   const [product,setProduct]=useState({});
+
+  // const [cartCount, setCartCount] = useState(0);
+
+  // useEffect(() => {
+  //   const storedCartCount = JSON.parse(localStorage.getItem('CartCount')) || 0;
+  //   setCartCount(storedCartCount);
+  // }, []);
   // Handle input changes
   useEffect(() => {
         const fetchData = async () => {
@@ -178,6 +186,13 @@ const NSPersonalize = () => {
     
           // Store the updated cart back into localStorage
           localStorage.setItem('OrderData', JSON.stringify(existingCart));
+
+          // Update cart count
+          addToCart();
+        // const newCartCount = cartCount + 1;
+        // setCartCount(newCartCount);
+        // localStorage.setItem('CartCount', newCartCount);
+
           alert('Product added to cart successfully!');
         } catch (error) {
           console.error('Error capturing the div:', error);
@@ -786,7 +801,7 @@ const NSPersonalize = () => {
               width={"25px"}
               alt=""
               className="custamlogo"
-              onclick={handlehidesection}
+              onClick={handlehidesection}
             />
             </div>
             <div className='img-cus'>

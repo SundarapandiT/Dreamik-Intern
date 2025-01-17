@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext,useState, useEffect } from 'react';
 import ResellerLogin from './ResellerLogin';
 import logo from '../assets/logo.png';
 import menuIcon from '../assets/menu.png';
 import cartLogo from '../assets/cartlogo1.png';
 import { useNavigate } from 'react-router-dom';
+import { CartContext } from './CartContext';
 // import "../style.css";
 
-function Navbar({ cartCount}) {
+function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  // const [cartCount, setCartCount] = useState(0);
+  const { cartCount,addCart } = useContext(CartContext);
   const [showResellerLogin, setShowResellerLogin] = useState(false);
   const navigate=useNavigate();
 
@@ -19,6 +22,10 @@ function Navbar({ cartCount}) {
     // Use navigateTo to switch to the "Order" view or cart-related component
     navigate('/Order');  // 'Order' can be a custom component or state that represents your cart
   };
+//  useEffect(() => {
+//     const storedCartCount = JSON.parse(localStorage.getItem('CartCount')) || 0;
+//     setCartCount(storedCartCount);
+//  },[]);
 
   return (
     <nav id="header">

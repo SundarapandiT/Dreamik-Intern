@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext,useEffect, useState } from 'react';
 import "./Order.css";
 import { useNavigate } from 'react-router-dom';
+import { CartContext } from '../CartContext';
 
 const Order = () => {
   const navigate=useNavigate();
@@ -13,8 +14,13 @@ const Order = () => {
   const [delPrice, setDelPrice] = useState(50);
   const [cod, setCod] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+  // const [cartCount, setCartCount] = useState(0);
+  const { cartCount,removeFromCart } = useContext(CartContext);
 
   useEffect(() => {
+    // const storedCartCount = JSON.parse(localStorage.getItem('CartCount')) || 0;
+    // setCartCount(storedCartCount);
+
     const storedOrderData = JSON.parse(localStorage.getItem('OrderData')) || [];
     setOrderData(storedOrderData);
     getPrice(storedOrderData);
@@ -48,6 +54,8 @@ const Order = () => {
     localStorage.setItem('OrderData', JSON.stringify(updatedCart));
     setOrderData(updatedCart); // Update state to reflect changes
     getPrice(updatedCart); // Recalculate total price
+    
+    removeFromCart();
   };
 
   const handleDeliveryChange = (e) => {
