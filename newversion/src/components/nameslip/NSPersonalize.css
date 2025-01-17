@@ -1,53 +1,109 @@
-/* General container styles */
+/* Container for the main personalize section */
 .personalizecontainer {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content:space-between;
   padding: 20px;
   gap: 20px;
-}
-
-/* Image container styles */
-.pers-img-cont {
+  }
+  
+  /* Image container styles */
+  .pers-img-cont {
   flex: 1;
   position: relative;
   border: 1px solid #ddd;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Product and selected image styling */
-.personalise-Image {
+  height: fit-content;
+  
+  }
+  
+  /* Product and selected image styling */
+  .personalise-Image {
   width: 100%;
   height: auto;
   object-fit: cover;
-}
-
-.personImage {
+    
+  }
+  
+  .personImage {
   position: absolute;
-  top: 20%;
-  left: 10%;
+  top: 40%;
+  left: 5%;
+  overflow: hidden;
   transform: translate(-50%, -50%);
   max-width: 80%;
   max-height: 80%;
-}
+  }
 
-/* Control container styles */
+/* Labels for student details */
+.studentname-lab {
+  position: absolute;
+   /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  top: 40%;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .schoolname-lab {
+  position: absolute;
+  top: 80%; /* Adjusted for perfect placement */
+  left: 60%; /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .subjectname-lab {
+  position: absolute;
+  top: 70%; /* Adjusted for perfect placement */
+  left: 60%; /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .rollnu-lab {
+  position: absolute;
+  top: 60%; /* Adjusted for perfect placement */
+  left: 60%; /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .sectionname-lab {
+  position: absolute;
+  top: 50%; /* Adjusted for perfect placement */
+  left: 80%; /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  
+  .classname-lab {
+  position: absolute;
+  top: 50%; /* Adjusted for perfect placement */
+  left: 50%; /* Adjusted for perfect placement */
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+/* Controls container */
 .controllize-container {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  align-self: flex-start;
-  overflow: auto; /* Scroll when necessary */
-  padding: 10px;
 }
 
-/* Button controls - Linear alignment */
+/* Control buttons and inputs */
 #buttonscontrol {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -73,65 +129,31 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Customize elements hidden by default */
-#customizediv,
-#namecustomizediv,
-#schoolnamecustomizediv,
-#sectioncustomizediv,
-#subjectcustomizediv,
-#classcustomizediv,
-#rollcustomizediv {
-  display: none;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
+/* Range sliders for brightness and contrast */
+input[type="range"] {
+  width: 100%;
+  appearance: none;
+  background-color: #ddd;
+  height: 5px;
   border-radius: 5px;
-  margin-top: 10px;
+  outline: none;
 }
 
-/* Moderate input sizes with inline buttons */
-.student-details {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
+/* Student details input fields */
 .student-details input {
-  width: 70%;
-  margin-right: 10px; /* Add spacing between input and button */
-  padding: 8px;
+  width: calc(100% - 20px);
+  margin: 10px 0;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
-  /* display: inline-block; */
-}
-
-.student-details button {
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 5px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: inline-block;
-  margin-left: 5px;
-}
-
-.student-details button:hover {
-  background-color: #218838;
 }
 
 /* Font customization section */
 #fontcenter {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 80%; /* Proper width adjustment */
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #f8f9fa;
+  gap: 10px;
 }
 
 .fontsizebtn {
@@ -148,9 +170,26 @@ button:hover {
   background-color: #218838;
 }
 
-/* Quantity input styles */
+/* Customize and details toggles */
+#customizediv,
+#namecustomizediv,
+#schoolnamecustomizediv,
+#sectioncustomizediv,
+#subjectcustomizediv,
+#classcustomizediv,
+#rollcustomizediv,
+#OD {
+  display: none;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+/* Quantity input */
 input[type="number"] {
-  width: 60px;
+  width: 50px;
   text-align: center;
   padding: 5px;
   border: 1px solid #ccc;
@@ -185,3 +224,179 @@ input[type="number"] {
   color: #333;
   text-align: center;
 }
+
+
+
+/* Controls container */
+.controllize-container {
+/* flex: 1; */
+display: flex;
+align-self: flex-start; /* Keeps the control container aligned at the top */
+overflow: auto;
+
+gap: 20px;
+}
+
+/* Control buttons and inputs */
+#buttonscontrol {
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+}
+
+#sel-img-btn,
+.zoom-in,
+.zoom-out,
+.del-btn,
+button {
+padding: 10px 15px;
+border: none;
+border-radius: 5px;
+background-color: #007bff;
+color: #fff;
+cursor: pointer;
+transition: background-color 0.3s;
+}
+
+#sel-img-btn:hover,
+.zoom-in:hover,
+.zoom-out:hover,
+.del-btn:hover,
+button:hover {
+background-color: #0056b3;
+}
+
+/* Range sliders for brightness and contrast */
+input[type="range"] {
+width: 100%;
+appearance: none;
+background-color: #ddd;
+height: 5px;
+border-radius: 5px;
+outline: none;
+}
+
+/* Student details input fields */
+.student-details input {
+width: calc(100% - 20px);
+margin: 10px 0;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+font-size: 14px;
+}
+
+/* Font customization section */
+#fontcenter {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+
+.fontsizebtn {
+padding: 5px 10px;
+font-size: 14px;
+border-radius: 5px;
+background-color: #28a745;
+color: #fff;
+border: none;
+cursor: pointer;
+}
+
+.fontsizebtn:hover {
+background-color: #218838;
+}
+
+/* Customize and details toggles */
+#customizediv,
+#namecustomizediv,
+#schoolnamecustomizediv,
+#OD {
+
+padding: 10px;
+background-color: #f8f9fa;
+border: 1px solid #ddd;
+border-radius: 5px;
+margin-top: 10px;
+}
+
+/* Quantity input */
+input[type="number"] {
+width: 50px;
+text-align: center;
+padding: 5px;
+border: 1px solid #ccc;
+border-radius: 5px;
+}
+
+/* Add to cart and download buttons */
+#add,
+#down {
+width: 100%;
+padding: 10px;
+border: none;
+border-radius: 5px;
+background-color: #17a2b8;
+color: white;
+font-size: 16px;
+cursor: pointer;
+text-align: center;
+}
+
+#add:hover,
+#down:hover {
+background-color: #117a8b;
+}
+
+/* Price label */
+#ad {
+display: block;
+margin: 10px 0;
+font-size: 18px;
+font-weight: bold;
+color: #333;
+text-align: center;
+}
+.stickerdiv{
+  display: block;
+  height:50%;
+  position:static;
+  margin-top: 20%;
+ 
+
+}
+/* Prevent one div from affecting the other */
+.personalizecontainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 20px;
+}
+
+.pers-img-cont, 
+.controllize-container {
+  flex: 1; /* Each div takes equal space */
+  /* Prevent growing */
+
+}
+
+.pers-img-cont {
+  align-self: flex-start; /* Keeps the image container aligned at the top */
+}
+
+.controllize-container {
+  align-self: flex-start; /* Keeps the control container aligned at the top */
+  overflow: auto; /* Add scrolling if content exceeds height */
+}
+
+
+
+
+
+
+
+
+
+
+

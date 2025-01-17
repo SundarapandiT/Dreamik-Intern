@@ -3,11 +3,13 @@ import ResellerLogin from './ResellerLogin';
 import logo from '../assets/logo.png';
 import menuIcon from '../assets/menu.png';
 import cartLogo from '../assets/cartlogo1.png';
+import { useNavigate } from 'react-router-dom';
 // import "../style.css";
 
-function Navbar({ cartCount, navigateTo }) {
+function Navbar({ cartCount}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showResellerLogin, setShowResellerLogin] = useState(false);
+  const navigate=useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -15,7 +17,7 @@ function Navbar({ cartCount, navigateTo }) {
 
   const handleCartClick = () => {
     // Use navigateTo to switch to the "Order" view or cart-related component
-    navigateTo('Order');  // 'Order' can be a custom component or state that represents your cart
+    navigate('/Order');  // 'Order' can be a custom component or state that represents your cart
   };
 
   return (
@@ -32,7 +34,7 @@ function Navbar({ cartCount, navigateTo }) {
       <div id="nav" className={menuOpen ? "nav-active" : ""}>
         <ul id="navbar">
           <li>
-            <a href="#" onClick={() => navigateTo('ProductList')} className="active">
+            <a href="#" onClick={()=>navigate('/')} className="active">
               Go To Shop
             </a>
           </li>
@@ -48,7 +50,7 @@ function Navbar({ cartCount, navigateTo }) {
               <ResellerLogin onClose={() => setShowResellerLogin(false)} />
             )}
           </li>
-          <li className="active" onClick={() => navigateTo('BulkOrder')}>
+          <li className="active" onClick={() => navigate('/BulkOrder')}>
           <h3 id="bulk-order" style={{ cursor: 'pointer' }}>Bulk-Order</h3>
           </li>
 

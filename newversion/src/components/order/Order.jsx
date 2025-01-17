@@ -1,40 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import "./Order.css";
+import { useNavigate } from 'react-router-dom';
 
 const Order = () => {
+  const navigate=useNavigate();
+  
   const [orderData, setOrderData] = useState([]);
   const [deliveryMode, setDeliveryMode] = useState('normal-delivery');
   const [paymentMode, setPaymentMode] = useState('online-payment');
   const [isReseller, setIsReseller] = useState(false);
   const [prodPrice, setProdPrice] = useState(0);
-  const [delPrice, setDelPrice] = useState(0);
-  const [cod, setCod] = useState(40);
+  const [delPrice, setDelPrice] = useState(50);
+  const [cod, setCod] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const storedOrderData = JSON.parse(localStorage.getItem('OrderData')) || [];
     setOrderData(storedOrderData);
+    getPrice(storedOrderData);
+
     const userDetails = JSON.parse(localStorage.getItem('UserDetails'));
     const resellerStatus = JSON.parse(localStorage.getItem('isReseller'));
     setIsReseller(resellerStatus);
-    getPrice(storedOrderData);
   }, []);
 
   const getPrice = (data) => {
     let productTotal = 0;
     data.forEach((prod) => {
-      productTotal += parseInt(prod.price.replace(/[^0-9]/g, ''), 10) * prod.quantity;
+      // Make sure price and quantity are valid numbers
+      const productPrice = parseInt(prod.price, 10);
+      const productQuantity = parseInt(prod.quantity, 10);
+
+      console.log("Product price:", productPrice, "Product quantity:", productQuantity); // Debugging step
+
+      if (!isNaN(productPrice) && !isNaN(productQuantity)) {
+        // productTotal += productPrice * productQuantity;
+        productTotal += productPrice ;
+      }
     });
     setProdPrice(productTotal);
     const total = productTotal + delPrice + cod;
     setTotalPrice(total);
   };
 
-  const removeProduct = async (prodToRemove) => {
-    const updatedOrderData = orderData.filter((prod) => prod !== prodToRemove);
-    setOrderData(updatedOrderData);
-    await localStorage.setItem('OrderData', JSON.stringify(updatedOrderData));
-    getPrice(updatedOrderData);
+  const removeProduct = (prod) => {
+    const updatedCart = orderData.filter((item) => item !== prod);
+    localStorage.setItem('OrderData', JSON.stringify(updatedCart));
+    setOrderData(updatedCart); // Update state to reflect changes
+    getPrice(updatedCart); // Recalculate total price
   };
 
   const handleDeliveryChange = (e) => {
@@ -56,25 +69,25 @@ const Order = () => {
   };
 
   const handleAddProduct = () => {
-    window.location.href = '/index.html'; // Redirect to add product page
+    window.location.href = '/'; // Redirect to add product page
   };
 
   return (
     <div id="container">
-      <div id="product-display">
-        {orderData.map((prod, index) => (
-          <div key={index} className="product-container">
-            <img src={prod.image} alt={prod.Name} className="prod-image" />
-            <h2 className="prod-name">{prod.Name}</h2>
-            {prod.type === 'nameslip' && <h2 className="prod-type">Type: {prod.labeltype}</h2>}
-            <h2 className="prod-price">Price: Rs. {parseInt(prod.price.replace(/[^0-9]/g, ''), 10)}.00</h2>
-            <h2 className="prod-qtn">Quantity: {prod.quantity}</h2>
-            {prod.size === 'medium One Extra Sheet' && <h3 className="prod-sheet">Sheets: 3 + 1</h3>}
-            <button className="prod-remove" onClick={() => removeProduct(prod)}>
-              Remove
-            </button>
-          </div>
-        ))}
+       <div id="product-display">
+      {orderData.map((prod, index) => (
+        <div key={index} className="product-container">
+          <img src={prod.image} alt={prod.Name} className="prod-image" />
+          <h2 className="prod-name">{prod.Name}</h2>
+          {prod.type === 'nameslip' && <h2 className="prod-type">Type: {prod.labeltype}</h2>}
+          <h2 className="prod-price">Price: Rs. {parseInt(prod.price, 10)}.00</h2>
+          <h2 className="prod-qtn">Quantity: {prod.quantity}</h2>
+          {prod.size === 'medium One Extra Sheet' && <h3 className="prod-sheet">Sheets: 3 + 1</h3>}
+          <button className="prod-remove" onClick={() => removeProduct(prod)}>
+            Remove
+          </button>
+        </div>
+      ))}
         <button id="addprod" onClick={handleAddProduct}>
           Add Product
         </button>

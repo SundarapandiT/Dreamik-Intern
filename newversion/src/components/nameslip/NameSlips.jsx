@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+// import '@fortawesome/fontawesome-free/css/all.min.css';
 
 
-
-const Nameslip = ({ navigateTo }) => {
+const Nameslip = () => {
 
   const [products, setProducts] = useState([]);
+  const navigate=useNavigate();
 
   useEffect(() => {
     const fetchJSONData = () => {
@@ -32,7 +34,7 @@ const Nameslip = ({ navigateTo }) => {
 
   const handleProductClick = (id) => {
     localStorage.setItem('keyid', id);
-    navigateTo('Products');  // Navigate to ProductDetails view
+    navigate(`/Products/:${id}`);  // Navigate to ProductDetails view
   };
 
   return (

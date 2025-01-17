@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const ProductList = ({ navigateTo }) => {
+const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [orderData, setOrderData] = useState([]);
+  const navigate=useNavigate();
 
   // Fetch product data
   useEffect(() => {
@@ -35,7 +37,7 @@ const ProductList = ({ navigateTo }) => {
   console.log(view);
   
   if (view) {
-    navigateTo(view);
+    navigate("/"+view);
   } else {
     console.log('Product not found:', product.name);
   }

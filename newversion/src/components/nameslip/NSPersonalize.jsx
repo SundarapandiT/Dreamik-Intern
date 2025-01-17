@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import "./NSPersonalize.css"
-const NSPersonalize = ({navigateTo}) => {
+import { useNavigate } from 'react-router-dom';
+
+const NSPersonalize = () => {
   const persImgContRef = useRef(null);
+  const navigate=useNavigate();
   const [brightness, setBrightness] = useState(100); // Default 100% (no change)
   const [contrast, setContrast] = useState(100); // Default 100% (no change)
+
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [transformations, setTransformations] = useState({
@@ -66,6 +70,19 @@ const NSPersonalize = ({navigateTo}) => {
     class: "",
   });
 
+  function sendToWhatsApp() {
+    var message = " ";
+    var phoneNumber = "919498088659";
+    var whatsappLink =
+      "https://api.whatsapp.com/send?phone=" +
+      phoneNumber +
+      "&text=" +
+      encodeURIComponent(message);
+    window.location.href = whatsappLink;
+    // window.open() = Window.prototype.open();
+    // window.open(whatsappLink);
+  };
+
   const [studentName, setStudentName] = useState("");
   const [fontSize, setFontSize] = useState(16);
   const [fontColor, setFontColor] = useState("#000000");
@@ -100,7 +117,75 @@ const NSPersonalize = ({navigateTo}) => {
   
       loadProductDetails();
     }, []);
-  
+    var glossy1=document.getElementById('glossy')
+    var normal1=document.getElementById('normal')
+    var labelstyle = "matte";
+  const normal=()=>{
+    normal1.style.backgroundColor = "#13aa52";
+    normal1.style.color = "#fff";
+    normal1.style.transform = "scale(1.2)";
+    glossy1.style.backgroundColor = "snow";
+    glossy1.style.borderRadius = "0px";
+    normal1.style.borderRadius = "15px";
+    glossy1.style.color = "black";
+    glossy1.style.transform = "scale(1)";
+    normal1.style.transition = ".4s";
+    glossy1.style.transition = ".4s";
+    labelstyle = "matte";
+   
+  };
+  const glossy=()=>{
+    glossy1.style.backgroundColor = "#13aa52";
+    glossy1.style.color = "#fff";
+    glossy1.style.transform = "scale(1.2)";
+    normal1.style.backgroundColor = "snow";
+    normal1.style.borderRadius = "0px";
+    glossy1.style.borderRadius = "15px";
+    normal1.style.color = "black";
+    normal1.style.transform = "scale(1)";
+    normal1.style.transition = ".4s";
+    glossy1.style.transition = ".4s";
+    labelstyle = "glossy";
+  };
+
+
+
+    //add to the cart
+    const handleAddToCart = async () => {
+      if (persImgContRef.current) {
+        try {
+          // Convert the div to an image using html2canvas
+          const canvas = await html2canvas(persImgContRef.current);
+          const imageData = canvas.toDataURL('image/png'); // Export as a Base64 image
+      
+          // Ensure price and quantity are being passed correctly
+          const productDetails = {
+            image: imageData,  // Base64 image data
+            quantity: quantity,  // User-selected quantity
+            price: product.price * quantity,  // Calculated price for the given quantity
+            Name: product.name,  // Product name
+            labeltype: product.labeltype,  // Example for extra info like label type
+            size: product.size,  // Size information (if needed)
+          };
+    
+          console.log("Product details being added:", productDetails); // Debugging step to check the values
+    
+          // Retrieve existing cart from localStorage
+          const existingCart = JSON.parse(localStorage.getItem('OrderData')) || [];
+    
+          // Push the new product to the cart
+          existingCart.push(productDetails);
+    
+          // Store the updated cart back into localStorage
+          localStorage.setItem('OrderData', JSON.stringify(existingCart));
+          alert('Product added to cart successfully!');
+        } catch (error) {
+          console.error('Error capturing the div:', error);
+        }
+      }
+      navigate('/Order');
+    };
+    
 
   const handleStudentNameChange = (event) => {
     setStudentName(event.target.value);
@@ -277,7 +362,8 @@ const NSPersonalize = ({navigateTo}) => {
   };
   return (
     <div className="personalizecontainer">
-      <div className="pers-img-cont" ref={persImgContRef}>
+      <div className="pers-img-cont" >
+        <div ref={persImgContRef}>
         <div className='stickerdiv'>
         <img
           src={product.source}
@@ -373,7 +459,7 @@ const NSPersonalize = ({navigateTo}) => {
           {studentDetails.class}
         </label>
       </div>
-      
+      </div>
       <div className="controllize-container">
         <div id="buttonscontrol">
           <label htmlFor="select-image" id="sel-img-btn">
@@ -788,7 +874,32 @@ const NSPersonalize = ({navigateTo}) => {
                 <option value="Times New Roman">Times New Roman</option>
               </select>
             </div>
-            Quantity
+            <div id="type">
+            <h3>Type</h3>
+            
+            <button id="normal" onClick={normal} ><h4>Matte</h4></button>
+            <button id="glossy" onClick={glossy} ><h4>Glossy</h4></button>
+            
+          </div>
+          <div id="size">
+            <h3>Size</h3>
+            <select name="" id="selectsize">
+               {/* <option value="small">
+                Small - (100mm * 34 mm) 16 labels - 32nos
+              </option> */}
+              <option value="medium">
+                Medium - (100mm * 44 mm) 12 labels - 36nos
+              </option>
+               {/* <option value="large">
+                Large - (100mm * 58 mm) 10 labels - 40nos
+              </option>
+              <option value="jumbo">
+                Jumbo - (100mm * 68 mm) 8 labels - 48nos
+              </option> -->  */}
+            </select>
+          </div>
+          <div id="quantity">
+          Quantity
             <input
               type="number"
               min={1}
@@ -796,15 +907,22 @@ const NSPersonalize = ({navigateTo}) => {
               onChange={handlePrice}
               style={{ width: "50px" }}
             />
+          </div>
             <br />
-            <button id="add">Add to cart</button>
+            <button id="add" onClick={handleAddToCart}>Add to cart</button>
             <br />
             <label id="ad">Rs.price {product.price * quantity}</label>
             <br />
             <button onClick={handleDownload} id="down">
               Download Image
             </button>
+            <button id="whatsapp" onClick={sendToWhatsApp}>
+            For More Than One Image Contact Us in WhatsApp
+          </button>
           </div>
+          <button onClick={() => navigate(-1)} style={{ marginBottom: '20px' }}>
+        Go Back
+      </button>
         </div>
       </div>
     </div>

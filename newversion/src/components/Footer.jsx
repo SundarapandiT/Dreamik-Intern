@@ -1,10 +1,13 @@
 import React from 'react';
 import logo from '../assets/logo.png';
 import "../style.css";
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCcVisa, faCcMastercard, faGooglePay, faFacebook, faTwitter, faInstagram, faYoutube, faGooglePlay } from '@fortawesome/free-brands-svg-icons';
 
 function Footer() {
+const navigate=useNavigate();
+
   return (
     <>
       <footer className="section-p1">
@@ -39,7 +42,7 @@ function Footer() {
         <div className="col3">
           <h3>My Account</h3>
           <a href="#">Sign In</a>
-          <a href="cart.html">View Cart</a>
+          <a href="#" onClick={()=>navigate('/Order')}>View Cart</a>
           <a href="#">My Wishlist</a>
           <a href="cart.html">Track My Order</a>
           <a href="Loacation/location.html">Reseller details</a>

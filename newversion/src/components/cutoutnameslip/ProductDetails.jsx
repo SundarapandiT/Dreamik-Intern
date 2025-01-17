@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const ProductDetails = ({ navigateTo }) => {
+const ProductDetails = () => {
   const [product, setProduct] = useState(null);
+  const navigate=useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +36,7 @@ const ProductDetails = ({ navigateTo }) => {
   const handlePersonalizeAndAddToCart = () => {
     if (product) {
       localStorage.setItem('product', JSON.stringify(product));
-      navigateTo('Template');
+      navigate('/Template');
     }
   };
   

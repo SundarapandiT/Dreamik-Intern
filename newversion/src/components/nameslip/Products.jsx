@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const Products = ({ navigateTo }) => {
+const Products = () => {
   const [product, setProduct] = useState(null);
+  const navigate=useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +36,7 @@ const Products = ({ navigateTo }) => {
   const handlePersonalizeAndAddToCart = (id) => {
     
       localStorage.setItem('keyid', id);
-      navigateTo('NSPersonalize');  // Navigate to NSPersonalize view
+      navigate(`/NSPersonalize/:${id}`);  // Navigate to NSPersonalize view
     };
   
 

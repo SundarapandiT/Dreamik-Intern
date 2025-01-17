@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const CutOutNameSlip = ({ navigateTo }) => {
+const CutOutNameSlip = () => {
   const [products, setProducts] = useState([]);
+  const navigate=useNavigate();
 
   useEffect(() => {
     const fetchJSONData = () => {
@@ -29,7 +31,7 @@ const CutOutNameSlip = ({ navigateTo }) => {
 
   const handleProductClick = (id) => {
     localStorage.setItem('keyid', id);
-    navigateTo('ProductDetails');  // Navigate to ProductDetails view
+    navigate(`ProductDetails:/${id}`);  // Navigate to ProductDetails view
   };
 
   return (
