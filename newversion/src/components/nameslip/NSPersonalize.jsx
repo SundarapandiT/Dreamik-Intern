@@ -474,11 +474,12 @@ const NSPersonalize = () => {
           {studentDetails.class}
         </label>
       </div>
+      Medium - (100mm * 44 mm) 12 labels - 36nos
       </div>
       <div className="controllize-container">
         <div id="buttonscontrol">
           <label htmlFor="select-image" id="sel-img-btn">
-            select image
+            Select Your image
           </label>
           <button id="editImage" onClick={handlecustomImage}>
             <img src="/image/custamize.png" width={"25px"} alt="" />
@@ -611,6 +612,7 @@ const NSPersonalize = () => {
             onClick={handlehidename}
             className="custamlogo"
           />
+          <br />
           <input
             type="text"
             name="schoolName"
@@ -658,6 +660,7 @@ const NSPersonalize = () => {
             onClick={handlehideschoolname}
             className="custamlogo"
           />
+          <br />
           <button id="otherdetails" onClick={handleotherDetails}>
             Other Details
           </button>
@@ -870,8 +873,8 @@ const NSPersonalize = () => {
               </button>
             </div>
             {/* Customize Font Color */}
-            <div>
-              <label>Pick Font Color: </label>
+            <div id='font-color'> 
+              Pick Font Color: 
               <input
                 type="color"
                 value={fontColor}
@@ -879,7 +882,7 @@ const NSPersonalize = () => {
               />
             </div>
             {/* Customize Font Family */}
-            <div>
+            <div id='font-family'>
               <label>Font Family: </label>
               <select onChange={handleFontFamilyChange} value={fontFamily}>
                 <option value="Arial">Arial</option>
@@ -889,15 +892,17 @@ const NSPersonalize = () => {
                 <option value="Times New Roman">Times New Roman</option>
               </select>
             </div>
+            <br />
             <div id="type">
             <h3>Type</h3>
-            
+            <br />
             <button id="normal" onClick={normal} ><h4>Matte</h4></button>
             <button id="glossy" onClick={glossy} ><h4>Glossy</h4></button>
             
           </div>
           <div id="size">
             <h3>Size</h3>
+            <br />
             <select name="" id="selectsize">
                {/* <option value="small">
                 Small - (100mm * 34 mm) 16 labels - 32nos
@@ -923,17 +928,17 @@ const NSPersonalize = () => {
               style={{ width: "50px" }}
             />
           </div>
+            <label id="price">Rs.price {product.price * quantity}</label>
             <br />
             <button id="add" onClick={handleAddToCart}>Add to cart</button>
             <br />
-            <label id="ad">Rs.price {product.price * quantity}</label>
-            <br />
-            <button onClick={handleDownload} id="down">
-              Download Image
-            </button>
+            
             <button id="whatsapp" onClick={sendToWhatsApp}>
-            For More Than One Image Contact Us in WhatsApp
-          </button>
+            <i className='fa-brands fa-whatsapp' id='whatsapp-icon'></i> For More Than One Image Contact Us in WhatsApp
+          </button><br />
+          <button onClick={handleDownload} id="down">
+              Download Image
+            </button> <br />
           </div>
           <button onClick={() => navigate(-1)} style={{ marginBottom: '20px' }}>
         Go Back
