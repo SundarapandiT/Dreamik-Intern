@@ -2,11 +2,9 @@ import React from 'react';
 import logo from '../assets/logo.png';
 import "../style.css";
 import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCcVisa, faCcMastercard, faGooglePay, faFacebook, faTwitter, faInstagram, faYoutube, faGooglePlay } from '@fortawesome/free-brands-svg-icons';
 
 function Footer() {
-const navigate=useNavigate();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -19,10 +17,10 @@ const navigate=useNavigate();
 
           <div className="contact-info">
             <p><strong>Address:</strong>
-             MURVEN Infotech Design Solutions LLP,
-             715-A, 7th Floor, Spencer Plaza,
-             Suite No.548, Mount Road, Anna Salai,
-             Chennai-600 002, Tamil Nadu, India.
+              MURVEN Infotech Design Solutions LLP,
+              715-A, 7th Floor, Spencer Plaza,
+              Suite No.548, Mount Road, Anna Salai,
+              Chennai-600 002, Tamil Nadu, India.
             </p>
             <p><strong>General Inquiries:</strong> +91-44-28505188</p>
             <span><strong>Email:</strong>
@@ -37,12 +35,12 @@ const navigate=useNavigate();
           <a href="privacy.html">Privacy Policy</a>
           <a href="terms.html">Terms & Conditions</a>
           <a href="refund.html">Return and Refund</a>
-          <a href="#"><i className="fa-solid fa-phone"></i>Contact Us</a>
+          <a href="#"><i className="fa-solid fa-phone"></i> Contact Us</a>
         </div>
         <div className="col3">
           <h3>My Account</h3>
           <a href="#">Sign In</a>
-          <a href="#" onClick={()=>navigate('/Order')}>View Cart</a>
+          <a href="#" onClick={() => navigate('/Order')}>View Cart</a>
           <a href="#">My Wishlist</a>
           <a href="cart.html">Track My Order</a>
           <a href="Loacation/location.html">Reseller details</a>
@@ -52,25 +50,24 @@ const navigate=useNavigate();
         <div className="follow">
           <h3>Follow us</h3>
           <div className="icons">
-            <a href="https://www.facebook.com/dreamikai"><FontAwesomeIcon icon={faFacebook} /></a>
-            <a href="https://twitter.com/dreamikaicomics"><FontAwesomeIcon icon={faTwitter} /></a>
-            <a href="https://www.instagram.com/dreamik.ai/"><FontAwesomeIcon icon={faInstagram} /></a>
-            <a href="https://www.youtube.com/channel/UC4B8UinlrPeW4yY0yPc37Tg"><FontAwesomeIcon icon={faYoutube} /></a>
+            <a href="https://www.facebook.com/dreamikai"><i className="fab fa-facebook"></i></a>
+            <a href="https://twitter.com/dreamikaicomics"><i className="fab fa-twitter"></i></a>
+            <a href="https://www.instagram.com/dreamik.ai/"><i className="fab fa-instagram"></i></a>
+            <a href="https://www.youtube.com/channel/UC4B8UinlrPeW4yY0yPc37Tg"><i className="fab fa-youtube"></i></a>
           </div>
         </div>
         <div className="col-install">
           <h3>Install</h3>
           <div className="icons">
-            <a href="https://play.google.com/store/apps/details?id=com.murvenllp.dreamikaicomics"><FontAwesomeIcon icon={faGooglePlay} /></a>
+            <a href="https://play.google.com/store/apps/details?id=com.murvenllp.dreamikaicomics"><i className="fab fa-google-play"></i></a>
           </div>
         </div>
         <div className="col-payment">
           <h3>Secured Payment Gateways</h3>
           <div className="icons">
-            <a href=""><FontAwesomeIcon icon={faCcVisa} /></a>
-            <a href=""><FontAwesomeIcon icon={faCcMastercard} /></a>
-            <a href="">M</a>
-            <a href=""><FontAwesomeIcon icon={faGooglePay} /></a>
+            <a href=""><i className="fab fa-cc-visa"></i></a>
+            <a href=""><i className="fab fa-cc-mastercard"></i></a>
+            <a href=""><i className="fab fa-google-pay"></i></a>
           </div>
         </div>
       </footer>
