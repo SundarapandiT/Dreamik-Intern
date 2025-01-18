@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 const Products = () => {
   const [product, setProduct] = useState(null);
   const navigate=useNavigate();

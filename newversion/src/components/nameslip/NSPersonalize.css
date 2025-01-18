@@ -2,13 +2,29 @@
 .personalizecontainer {
   display: flex;
   flex-direction: row;
-  justify-content:space-between;
+  justify-content: space-between;
   padding: 20px;
   gap: 20px;
-  }
-  
-  /* Image container styles */
-  .pers-img-cont {
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.pers-img-cont, 
+.controllize-container {
+  flex: 1;
+  min-width: 300px; /* Set minimum width for better responsiveness */
+}
+
+.pers-img-cont {
+  align-self: flex-start;
+}
+
+.controllize-container {
+  align-self: flex-start;
+  overflow: auto;
+}
+
+ /* Image container styles */
+ .pers-img-cont {
   flex: 1;
   position: relative;
   border: 1px solid #ddd;
@@ -18,89 +34,48 @@
   height: fit-content;
   
   }
-  
-  /* Product and selected image styling */
-  .personalise-Image {
+
+/* Product and selected image styling */
+.personalise-Image {
   width: 100%;
   height: auto;
   object-fit: cover;
-    
-  }
-  
-  .personImage {
+}
+
+.personImage {
   position: absolute;
   top: 40%;
   left: 5%;
   overflow: hidden;
   transform: translate(-50%, -50%);
-  max-width: 80%;
-  max-height: 80%;
+  max-width: 35%;
+  max-height: 35%;
   }
 
 /* Labels for student details */
-.studentname-lab {
+.studentname-lab, .schoolname-lab, .subjectname-lab, 
+.rollnu-lab, .sectionname-lab, .classname-lab {
   position: absolute;
-   /* Adjusted for perfect placement */
-  text-align: center;
-  font-weight: bold;
-  top: 40%;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .schoolname-lab {
-  position: absolute;
-  top: 80%; /* Adjusted for perfect placement */
-  left: 60%; /* Adjusted for perfect placement */
   text-align: center;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .subjectname-lab {
-  position: absolute;
-  top: 70%; /* Adjusted for perfect placement */
-  left: 60%; /* Adjusted for perfect placement */
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .rollnu-lab {
-  position: absolute;
-  top: 60%; /* Adjusted for perfect placement */
-  left: 60%; /* Adjusted for perfect placement */
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .sectionname-lab {
-  position: absolute;
-  top: 50%; /* Adjusted for perfect placement */
-  left: 80%; /* Adjusted for perfect placement */
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .classname-lab {
-  position: absolute;
-  top: 50%; /* Adjusted for perfect placement */
-  left: 50%; /* Adjusted for perfect placement */
-  text-align: center;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
+}
+
+.studentname-lab { top: 38%; }
+.schoolname-lab { top: 78%; left: 50%; }
+.subjectname-lab { top: 67%; left: 60%; }
+.rollnu-lab { top: 58%; left: 60%; }
+.sectionname-lab { top: 48%; left: 80%; }
+.classname-lab { top: 48%; left: 50%; }
 
 /* Controls container */
 .controllize-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   background-color: #ddd;
   border: 1px solid rgba(0, 0, 0, 0.233);
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Control buttons and inputs */
@@ -110,6 +85,27 @@
   gap: 10px;
 }
 
+
+/* Range sliders for brightness and contrast */
+input[type="range"] {
+  width: 100%;
+  appearance: none;
+  background-color: #ddd;
+  height: 5px;
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Student details input fields */
+.student-details input {
+  width: 50%;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
 /* Font customization section */
 #fontcenter {
   display: flex;
@@ -118,145 +114,108 @@
 }
 
 .fontsizebtn {
-  padding: 5px 10px;
+  padding: 10px;
   font-size: 14px;
   border-radius: 5px;
-  background-color: #28a745;
+  background-color: #2894a7;
   color: #fff;
   border: none;
   cursor: pointer;
+  margin: 10px;
 }
 
 .fontsizebtn:hover {
-  background-color: #218838;
+  background-color: #14669c;
 }
 
 /* Customize and details toggles */
-#customizediv,
-#namecustomizediv,
-#schoolnamecustomizediv,
-#sectioncustomizediv,
-#subjectcustomizediv,
-#classcustomizediv,
-#rollcustomizediv,
+/* Customize divs hidden by default */
+#customizediv, #namecustomizediv, #schoolnamecustomizediv, 
+#OD, #rollcustomizediv, #sectioncustomizediv, #classcustomizediv {
+  display: none; /* Initially hidden */
+}
+
+/* Uniform button styles for customize div buttons */
+#customizediv button, #namecustomizediv button, 
+#schoolnamecustomizediv button, #rollcustomizediv button, 
+#sectioncustomizediv button, #classcustomizediv button, 
+#OD button ,#sel-img-btn,#editImage,#otherdetails{
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
+.custamlogo
+{
+  border: 1px solid;
+  padding: 1px;
+  margin: 0 10px;
+}
+
+/* Hover effect for customize div buttons */
+#customizediv button:hover, #namecustomizediv button:hover, 
+#schoolnamecustomizediv button:hover, #rollcustomizediv button:hover, 
+#sectioncustomizediv button:hover, #classcustomizediv button:hover, 
+#OD button:hover {
+  background-color: #0056b3;
+}
+
+/* Additional styles for alignment and spacing if needed */
+#customizediv, #namecustomizediv, #schoolnamecustomizediv, 
+#rollcustomizediv, #sectioncustomizediv, #classcustomizediv, 
 #OD {
-  display: none;
-  padding: 20px;
-  background-color: #f8f9fa;
+  padding: 15px;
   border: 1px solid #ddd;
+  background-color: #f8f9fa;
   border-radius: 5px;
   margin-top: 10px;
 }
 
-
-#sel-img-btn,
-.zoom-in,
-.zoom-out,
-.del-btn,
-button {
-padding: 10px 15px;
-border: none;
-border-radius: 5px;
-background-color: #007bff;
-color: #fff;
-cursor: pointer;
-margin: 10px;
-transition: background-color 0.3s;
+/* Responsive adjustments for customize divs */
+@media (max-width: 768px) {
+  #customizediv, #namecustomizediv, #schoolnamecustomizediv, 
+  #rollcustomizediv, #sectioncustomizediv, #classcustomizediv, 
+  #OD {
+    padding: 10px;
+    font-size: 12px;
+  }
 }
 
-#sel-img-btn:hover,
-.zoom-in:hover,
-.zoom-out:hover,
-.del-btn:hover,
-button:hover {
-background-color: #0056b3;
-}
 
-/* Range sliders for brightness and contrast */
-input[type="range"] {
-width: 100%;
-appearance: none;
-background-color: #ddd;
-height: 5px;
-border-radius: 5px;
-outline: none;
-}
-
-/* Student details input fields */
-.student-details input {
-width: 50%;
-margin: 10px 0;
-padding: 10px;
-border: 1px solid #ccc;
-border-radius: 5px;
-font-size: 14px;
-}
-
-/* Font customization section */
-#fontcenter {
-display: flex;
-flex-direction: column;
-gap: 10px;
-}
-
-.fontsizebtn {
-padding: 10px 10px;
-font-size: 14px;
-border-radius: 5px;
-background-color: #2894a7;
-color: #fff;
-border: none;
-cursor: pointer;
-margin: 10px 10px;
-}
-
-.fontsizebtn:hover {
-background-color: #14669c;
-}
-
-/* Customize and details toggles */
-#customizediv,
-#namecustomizediv,
-#schoolnamecustomizediv,
-#OD {
-
-padding: 10px;
-background-color: #f8f9fa;
-border: 1px solid #ddd;
-border-radius: 5px;
-margin-top: 10px;
-}
-#font-color
-{
+/* Font and quantity customization */
+#font-color {
   width: 20%;
   align-self: center;
   color: #0056b3;
   font-weight: 600;
 }
-#font-family
-{
+
+#font-family {
   color: #0056b3;
   font-weight: 600;
 }
 
-#type button
-{
-    width: 20%;
-    background-color: #ccc;
-    padding: auto;
+#type button {
+  width: 20%;
+  background-color: #ccc;
+  padding: 10px;
 }
 
-#size
-{
+#size {
   padding: 7px;
 }
-#size select
-{
- padding: 10px; 
+
+#size select {
+  padding: 10px; 
 }
 
-#quantity
-{
+#quantity {
   padding: 5px 30px;
   color: #0056b3;
   font-weight: 600;
@@ -265,109 +224,147 @@ margin-top: 10px;
 
 /* Quantity input */
 input[type="number"] {
-width: 100px;
-text-align: center;
-padding: 10px;
-border: 1px solid #ccc;
-border-radius: 5px;
-margin: 0 7px;
-font-weight: 600;
+  width: 100px;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 0 7px;
+  font-weight: 600;
 }
 
 /* Add to cart and download buttons */
-#add,#down
- {
-width: 50%;
-padding: 10px;
-border: none;
-border-radius: 5px;
-background-color: #17b83a;
-color: white;
-font-size: 16px;
-font-weight: 800;
-cursor: pointer;
-text-align: center;
-align-self: center;
-}
-#down
-{
-  background-color: #0056b3;
-}
-#add:hover,
-#down:hover {
-background-color: #000000;
-color: #17b83a;
-letter-spacing: 2px;
-border-radius: 30px;
+#add, #down {
+  width: 50%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #17b83a;
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  align-self: center;
 }
 
-#whatsapp
-{
+#down {
+  background-color: #0056b3;
+}
+
+#add:hover, #down:hover {
+  background-color: #000000;
+  color: #17b83a;
+  letter-spacing: 2px;
+  border-radius: 30px;
+}
+
+/* WhatsApp button */
+#whatsapp {
   width: 70%;
   align-self: center;
   background-color: #0c0505;
   font-size: medium;
   font-weight: 600;
+  color: #ccc;
 }
-#whatsapp-icon
-{
+
+#whatsapp-icon {
   font-weight: 600;
   font-size: 20px;
   padding: 5px;
   color: #17b83a;
 }
+
 /* Price label */
 #price {
-display: block;
-align-self: center;
-width: 40%;
-font-size: 18px;
-font-weight: bold;
-color: #333;
-text-align: center;
-border: 1px solid red;
-border-radius: 30px;
-padding: 10px;
-}
-.stickerdiv{
   display: block;
-  height:50%;
-  position:static;
+  align-self: center;
+  width: 40%;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  border: 1px solid red;
+  border-radius: 30px;
+  padding: 10px;
+}
+
+/* Sticker container */
+.stickerdiv {
+  display: block;
+  height: 50%;
+  position: static;
   margin-top: 20%;
- 
-
-}
-/* Prevent one div from affecting the other */
-.personalizecontainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 20px;
-  gap: 20px;
 }
 
-.pers-img-cont, 
-.controllize-container {
-  flex: 1; /* Each div takes equal space */
-  /* Prevent growing */
-
+#goback {
+  padding: 10px;
+  background-color: #007bff;
+  border-radius: 20px;
+  color: white;
+  border: none;
 }
 
-.pers-img-cont {
-  align-self: flex-start; /* Keeps the image container aligned at the top */
+#goback:hover {
+  border: 1px solid gray;
 }
 
-.controllize-container {
-  align-self: flex-start; /* Keeps the control container aligned at the top */
-  overflow: auto; /* Add scrolling if content exceeds height */
+/* Responsive media queries */
+@media (max-width: 1024px) {
+  .personalizecontainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pers-img-cont, 
+  .controllize-container {
+    width: 100%;
+  }
+
+  .pers-img-cont {
+    margin-bottom: 20px;
+  }
 }
 
+@media (max-width: 768px) {
+  .studentname-lab, .schoolname-lab, .subjectname-lab, 
+  .rollnu-lab, .sectionname-lab, .classname-lab {
+    font-size: 12px;
+  }
 
+  #add, #down {
+    width: 80%;
+    font-size: 14px;
+  }
 
+  #price {
+    width: 60%;
+    font-size: 16px;
+  }
+}
 
+@media (max-width: 480px) {
+  .personalizecontainer {
+    flex-direction: column;
+  }
 
+  .pers-img-cont {
+    margin-bottom: 20px;
+    padding: 10px;
+  }
 
+  .studentname-lab, .schoolname-lab, .subjectname-lab, 
+  .rollnu-lab, .sectionname-lab, .classname-lab {
+    font-size: 10px;
+  }
 
+  #add, #down {
+    font-size: 12px;
+    padding: 8px;
+  }
 
-
-
+  #price {
+    font-size: 14px;
+  }
+}

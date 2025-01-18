@@ -203,6 +203,11 @@
 #container #proceedtopay:hover {
   background-color: #218838;
 }
+.astrics
+{
+  color: red;
+  font-weight: 600;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
