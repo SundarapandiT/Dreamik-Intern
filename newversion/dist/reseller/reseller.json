@@ -1,0 +1,38 @@
+[
+    {
+        "name" : "kishore",
+        "id":"R1234567",
+        "email":"kishorebabu200409@gmail.com",
+        "password":"12345678",
+        "phoneno":6238418876,
+        "whatsappno":6238418876,
+        "address1":"525/4",
+        "address2":"525/4",
+        "pincode":605302,
+        "district":"villupuram",
+        "state":"tamilnadu",
+        "landmark":"none",
+        "products":["nameslip"],
+        "walkin":"yes",
+        "chekin":"no",
+        "courier":"no"
+    },
+    {
+        "name":"murugan",
+        "id":"R7126354",
+        "email":"murugan@123@gmail.com",
+        "password":"87654321",
+        "mobileno":6238418876,
+        "whatsappno":6238418876,
+        "address1":"515/4",
+        "address2":"515/4",
+        "pincode":600001,
+        "district":"chennai",
+        "state":"tamilnadu",
+        "landmark" : "none",
+        "products":["nameslip","poster","bagtag","sticker","aigennameslip","notebook","cutoutnameslip","pencil"],
+        "walkin":"yes",
+        "chekin":"yes",
+        "courier":"yes"
+    }
+]
