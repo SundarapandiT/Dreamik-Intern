@@ -827,7 +827,7 @@ a {
     font-weight: bold;
   }
 }
-#nav1 {
+.nav-active {
   display: none;
 }
 #menubar {
@@ -841,56 +841,74 @@ a {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
   }
+
   #menubar {
     display: flex;
     border-radius: 10px;
+    cursor: pointer; /* Add pointer cursor for better UX */
   }
+
   #nav {
-    display: none;
-    width: 80%;
+    display: none; /* Hide menu by default */
+    width: 100%; /* Ensure it takes the full width */
     flex-direction: column;
-    flex-wrap: wrap;
+    align-items: center;
+    background-color: #e3e6f5; /* Background color for menu */
   }
-  #nav1 {
-    display: none;
-    width: 100%;
+
+  /* When menu is active, make it visible */
+  .nav-active {
+    display: flex; /* Make menu visible */
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
-    background: #e3e6f5;
+    background-color: #e3e6f5;
   }
+
   #mobilecartlogo {
     display: block;
   }
+
   .logo-section {
-    width: 80%;
+    width: auto;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Add spacing between logo and text */
   }
+
   .logo {
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
   }
+
   .logo-section > h2 {
-    font-size: 25px;
+    font-size: 20px;
   }
+
   #prodetails {
-    width: 99%;
+    width: 100%;
   }
+
   #details {
     width: 300px;
   }
+
   #properties {
     width: 300px;
     justify-content: space-around;
   }
+
   .pro-container {
     width: 100vw;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
   }
 }
+
 
 #list_products {
   position: absolute;

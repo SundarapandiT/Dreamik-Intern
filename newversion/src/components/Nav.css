@@ -1,0 +1,72 @@
+/* Dropdown Container */
+.dropdown {
+    position: relative; /* Relative to position the dropdown menu */
+    display: inline-block;
+  }
+  
+  /* Dropdown Button (Other Products) */
+  #products {
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    padding: 10px 15px;
+    transition: color 0.2s ease-in-out;
+  }
+  
+  #products:hover {
+    color: #007bff; /* Change color on hover */
+    /* text-decoration: underline; */
+  }
+  
+  /* Dropdown Menu */
+  .dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 40px; /* Adjust based on the height of the button */
+    left: 0;
+    background-color: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 4px;
+    z-index: 1000;
+    width: 180px; /* Adjust width as needed */
+  }
+  
+  /* Show dropdown menu when active */
+  .dropdown-active .dropdown-menu {
+    display: block; /* Make the dropdown menu visible */
+  }
+  
+  /* Dropdown Items */
+  .dropdown-menu li {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  }
+  
+  .dropdown-menu li:hover {
+    background-color: #f0f0f0; /* Highlight the hovered item */
+    color: #007bff;
+  }
+  
+  /* Adjust positioning for smaller screens */
+  @media (max-width: 768px) {
+    .dropdown-menu {
+      top: 50px; /* Adjust dropdown position for smaller devices */
+      left: 0; /* Ensure alignment */
+      width: 100%; /* Make dropdown full width */
+      border-radius: 0; /* Remove border radius for full-width dropdown */
+    }
+  
+    #products {
+      font-size: 16px;
+      padding: 10px;
+    }
+  }
+  

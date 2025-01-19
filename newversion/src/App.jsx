@@ -15,6 +15,7 @@ import CustamizableBagTage from './components/bagtag/CustamizableBagTage';
 import Products from './components/nameslip/Products';
 import NSPersonalize from './components/nameslip/NSPersonalize';
 import BulkOrder from './components/bulkorder/BulkOrder'
+import Payment from './components/payment/Payment';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 function App() {
   // const [cartCount, setCartCount] = useState(0);
@@ -39,6 +40,7 @@ function App() {
         <Route path="/NSPersonalize/:id" element={<NSPersonalize />} />
         <Route path="/Order" element={<Order />} />
         <Route path="/BulkOrder" element={<BulkOrder />}/>
+        <Route path="/payment" element={<Payment />}/>
       </Routes>
       <Newsletter />
       <Footer />
