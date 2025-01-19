@@ -1,5 +1,5 @@
 import React, { useContext,useState, useEffect, useRef } from 'react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@latest/dist/html2canvas.esm.js';
 // import domtoimage from 'dom-to-image';
 import "./NSPersonalize.css"
 import { useNavigate } from 'react-router-dom';
