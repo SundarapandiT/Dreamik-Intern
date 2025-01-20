@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware to parse incoming JSON requests and increase the size limit
-app.use(bodyParser.json({ limit: '10mb' })); // Increase payload limit if needed
+app.use(bodyParser.json({ limit: '100mb' })); // Increase payload limit if needed
 
 // Enable CORS (Update with your production frontend URL)
 app.use(cors({
