@@ -2,7 +2,7 @@
   "name": "order-management-api",
   "version": "1.0.0",
   "scripts": {
-    "start": "node Scripts.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "express": "^4.17.1",
