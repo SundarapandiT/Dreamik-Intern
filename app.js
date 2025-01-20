@@ -1,22 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require("cors");
+const cors = require('cors');
 const { Client } = require('basic-ftp');
 const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to parse JSON request bodies
-app.use(bodyParser.json());
+// Middleware to parse JSON request bodies and handle larger payloads
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
-// Specific CORS configuration
+// Enable CORS for localhost and your domain
 const corsOptions = {
-  origin: ["https://dreamikai.com", "https://www.dreamikai.com", "http://localhost:5173"], // Restrict to specific domains
-  methods: ["GET", "POST"], // Allow only GET and POST methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+  origin: ["http://localhost:5173", "https://dreamikai.com"],
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
-app.use(cors(corsOptions)); // Apply CORS middleware
+app.use(cors(corsOptions));
 
 // FTP upload function
 const uploadToFTP = async (fileBuffer, fileName) => {
@@ -24,7 +25,6 @@ const uploadToFTP = async (fileBuffer, fileName) => {
   client.ftp.verbose = true;
 
   try {
-    // Connect to FTP server
     await client.access({
       host: 'dreamikai.com',
       user: 'u709132829.dreamikai.com',
@@ -32,33 +32,29 @@ const uploadToFTP = async (fileBuffer, fileName) => {
       secure: false, // Non-FTPS, set to true for FTPS
     });
 
-    // Ensure the directory exists
     await client.ensureDir('public_html/uploads');
-
-    // Upload file buffer to FTP
     await client.uploadFrom(fileBuffer, fileName);
 
     console.log(`Successfully uploaded ${fileName} to FTP server.`);
   } catch (err) {
     console.error('FTP upload failed', err);
-    throw err; // Re-throw the error to handle it in the route
+    throw err;
   } finally {
     client.close();
   }
 };
 
-// Handle POST request to store order and upload order confirmation JSON
+// API to store order and upload order confirmation JSON
 app.post('/api/storeOrder', async (req, res) => {
   const orderDetails = req.body;
 
-  // Generate order confirmation file content
-  const orderConfirmationFileContent = JSON.stringify(orderDetails, null, 2);
-  const fileName = `${orderDetails.orderId}-orderconfirmation.json`;
-
-  // Upload the file to FTP
   try {
-    // Convert the JSON content to a buffer
-    const fileBuffer = Buffer.from(orderConfirmationFileContent, 'utf-8');
+    // Create the JSON string for the order confirmation file
+    const orderConfirmationContent = JSON.stringify(orderDetails, null, 2);
+    const fileName = `${orderDetails.orderId}-orderconfirmation.json`;
+
+    // Convert JSON string to Buffer for FTP upload
+    const fileBuffer = Buffer.from(orderConfirmationContent);
 
     await uploadToFTP(fileBuffer, fileName);
 
