@@ -22,11 +22,11 @@ app.use(cors({
 
 // Set up MySQL connection
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || "127.0.0.1", // Your DB host, e.g., 'localhost' or your hosted database
-  port: process.env.DB_PORT || "3306", // DB port (default is 3306 for MySQL)
-  user: process.env.DB_USER || "u709132829_sundarapandit", // DB username
-  password: process.env.DB_PASSWORD || "tsK17072004", // DB password (ensure this is secured and not hardcoded)
-  database: process.env.DB_NAME || "u709132829_order_details", // DB name
+  host:"127.0.0.1", // Your DB host, e.g., 'localhost' or your hosted database
+  port:"3306", // DB port (default is 3306 for MySQL)
+  user:"u709132829_sundarapandit", // DB username
+  password:"tsK17072004", // DB password (ensure this is secured and not hardcoded)
+  database:"u709132829_order_details", // DB name
 });
 
 // Connect to MySQL
