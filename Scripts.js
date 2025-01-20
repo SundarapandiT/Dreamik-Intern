@@ -22,7 +22,7 @@ app.use(cors({
 
 // Set up MySQL connection
 const db = mysql.createConnection({
-  host:"127.0.0.1", // Your DB host, e.g., 'localhost' or your hosted database
+  host:"153.92.15.45", // Your DB host, e.g., 'localhost' or your hosted database
   port:"3306", // DB port (default is 3306 for MySQL)
   user:"u709132829_sundarapandit", // DB username
   password:"tsK17072004", // DB password (ensure this is secured and not hardcoded)
