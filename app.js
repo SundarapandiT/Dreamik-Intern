@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require("cors");
 const { Client } = require('basic-ftp');
 const fs = require('fs');
 
@@ -8,6 +9,14 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON request bodies
 app.use(bodyParser.json());
+
+// Specific CORS configuration
+const corsOptions = {
+  origin: ["https://dreamikai.com", "https://www.dreamikai.com", "http://localhost:5173"], // Restrict to specific domains
+  methods: ["GET", "POST"], // Allow only GET and POST methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+};
+app.use(cors(corsOptions)); // Apply CORS middleware
 
 // FTP upload function
 const uploadToFTP = async (fileBuffer, fileName) => {
@@ -32,6 +41,7 @@ const uploadToFTP = async (fileBuffer, fileName) => {
     console.log(`Successfully uploaded ${fileName} to FTP server.`);
   } catch (err) {
     console.error('FTP upload failed', err);
+    throw err; // Re-throw the error to handle it in the route
   } finally {
     client.close();
   }
@@ -41,15 +51,20 @@ const uploadToFTP = async (fileBuffer, fileName) => {
 app.post('/api/storeOrder', async (req, res) => {
   const orderDetails = req.body;
 
-  // Generate order confirmation file
-  const orderConfirmationFile = new Blob([JSON.stringify(orderDetails, null, 2)], { type: 'application/json' });
+  // Generate order confirmation file content
+  const orderConfirmationFileContent = JSON.stringify(orderDetails, null, 2);
   const fileName = `${orderDetails.orderId}-orderconfirmation.json`;
 
   // Upload the file to FTP
   try {
-    await uploadToFTP(orderConfirmationFile, fileName);
+    // Convert the JSON content to a buffer
+    const fileBuffer = Buffer.from(orderConfirmationFileContent, 'utf-8');
+
+    await uploadToFTP(fileBuffer, fileName);
+
     res.status(200).send('Order saved and confirmation file uploaded.');
   } catch (error) {
+    console.error('Error uploading confirmation file:', error);
     res.status(500).send('Error uploading confirmation file to FTP.');
   }
 });
