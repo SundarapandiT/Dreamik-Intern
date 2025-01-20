@@ -15,7 +15,7 @@ app.use(bodyParser.json({ limit: '100mb' })); // Increase payload limit if neede
 
 // Enable CORS (Update with your production frontend URL)
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Change to your frontend URL in production
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173' || 'https://dreamikai.com', // Change to your frontend URL in production
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 }));
