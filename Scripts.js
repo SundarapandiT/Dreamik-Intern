@@ -10,19 +10,23 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware to parse incoming JSON requests
-app.use(bodyParser.json());
+// Middleware to parse incoming JSON requests and increase the size limit
+app.use(bodyParser.json({ limit: '10mb' })); // Increase payload limit if needed
 
-// Enable CORS
-app.use(cors());
+// Enable CORS (Update with your production frontend URL)
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Change to your frontend URL in production
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 
 // Set up MySQL connection
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || "127.0.0.1",
-  port: process.env.DB_PORT || "3306",
-  user: process.env.DB_USER || "u709132829_sundarapandit",
-  password: process.env.DB_PASSWORD || "tsK17072004",
-  database: process.env.DB_NAME || "u709132829_order_details",
+  host: process.env.DB_HOST || "127.0.0.1", // Your DB host, e.g., 'localhost' or your hosted database
+  port: process.env.DB_PORT || "3306", // DB port (default is 3306 for MySQL)
+  user: process.env.DB_USER || "u709132829_sundarapandit", // DB username
+  password: process.env.DB_PASSWORD || "tsK17072004", // DB password (ensure this is secured and not hardcoded)
+  database: process.env.DB_NAME || "u709132829_order_details", // DB name
 });
 
 // Connect to MySQL
