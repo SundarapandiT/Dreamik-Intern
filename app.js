@@ -62,7 +62,7 @@ ${formattedOrderData}
     `;
 
     // Save the details to a text file
-    const detailsPath = path.join(uploadDir,uploadDir, `orderdetails_${orderId}.txt`);
+    const detailsPath = path.join(uploadDir,`orderdetails_${orderId}.txt`);
     fs.writeFileSync(detailsPath, orderDetails);
     console.log(detailsPath);
 
@@ -86,7 +86,7 @@ ${formattedOrderData}
       }
     });
 
-    const imagePath = path.join(uploadDir,uploadDir, `orderdetails_${orderId}.png`);
+    const imagePath = path.join(uploadDir,`orderdetails_${orderId}.png`);
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(imagePath, buffer);
 
