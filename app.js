@@ -20,7 +20,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // For parsing JSON bodies
+app.use(express.json({ limit: '50mb' }));// For parsing JSON bodies
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
