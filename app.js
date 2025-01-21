@@ -3,7 +3,6 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { Client } = require('basic-ftp');
-const base64Img = require('base64-img'); // You can use a library for easier base64 to image conversion
 
 const app = express();
 const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
@@ -29,12 +28,12 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 app.post('/upload', async (req, res) => {
-  const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
+  const { orderId, orderData, paymentDetails, priceDetails, formContainer, orderImageBase64 } = req.body;
 
   try {
     console.log('Incoming order details:', req.body);
 
-    if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
+    if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer || !orderImageBase64) {
       throw new Error('Missing required fields in the order details.');
     }
 
@@ -58,21 +57,18 @@ app.post('/upload', async (req, res) => {
 ${formattedOrderData}
     `;
 
+    // Save order details to a text file
     const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
     fs.appendFileSync(detailsPath, orderDetails); // Append content to the text file
     console.log(`Order details saved to: ${detailsPath}`);
 
-    // Handle the base64 image and save it as a PNG
-    const orderImageBase64 = orderData[0]?.image; // Assuming the image is part of the first order item
-    if (!orderImageBase64) {
-      throw new Error('No base64 image data found in order.');
-    }
-
-    // Convert base64 to PNG and save it
+    // Convert base64 image to buffer and save as PNG
+    const imageBuffer = Buffer.from(orderImageBase64, 'base64');
     const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
-    const base64Data = orderImageBase64.replace(/^data:image\/png;base64,/, ''); // Remove data URI part
-    fs.writeFileSync(imagePath, Buffer.from(base64Data, 'base64'));
+    fs.writeFileSync(imagePath, imageBuffer);
+    console.log('Image saved at path:', imagePath);
 
+    // Upload the files to FTP
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -83,28 +79,18 @@ ${formattedOrderData}
       secure: false,
     });
 
-    console.log('Connected to FTP server.');
+    // Upload order details file
+    await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+    console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-    // Verify local file existence
-    if (!fs.existsSync(detailsPath)) {
-      throw new Error(`Text file does not exist at path: ${detailsPath}`);
-    }
-    if (!fs.existsSync(imagePath)) {
-      throw new Error(`Image file does not exist at path: ${imagePath}`);
-    }
-
-    // Upload text file directly to the uploads directory
-    await client.uploadFrom(detailsPath, `uploads/orderdetails_${orderId}.txt`);
-    console.log(`Text file uploaded: uploads/orderdetails_${orderId}.txt`);
-
-    // Upload image file directly to the uploads directory
-    await client.uploadFrom(imagePath, `uploads/orderdetails_${orderId}.png`);
-    console.log(`Image file uploaded: uploads/orderdetails_${orderId}.png`);
+    // Upload image file
+    await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
+    console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
 
     client.close();
 
     res.status(200).json({
-      message: 'Order details uploaded successfully!',
+      message: 'Order details and image uploaded successfully!',
       orderId,
     });
   } catch (error) {
