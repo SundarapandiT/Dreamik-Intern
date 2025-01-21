@@ -109,8 +109,8 @@ ${formattedOrderData}
       // // Retry until folder is ensured
       // while (retries < maxRetries) {
       //   try {
-      //     await client.ensureDir(folderName); // Ensure that the folder is created
-      //     console.log(`Navigated to folder: ${folderName}`);
+          await client.ensureDir(folderName); // Ensure that the folder is created
+          console.log(`Navigated to folder: ${folderName}`);
       //     success = true;
       //     break;
       //   } catch (err) {
