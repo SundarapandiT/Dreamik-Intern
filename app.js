@@ -43,7 +43,7 @@ app.post('/upload', async (req, res) => {
       throw new Error('Missing required fields in the order details.');
     }
 
-    const folderName = `${formContainer.name}ORDER_${new Date().getTime()}`;
+    const folderName = `uploads/${formContainer.name}ORDER_${new Date().getTime()}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
     fs.mkdirSync(orderFolderPath, { recursive: true });
