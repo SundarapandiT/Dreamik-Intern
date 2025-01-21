@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 const { Client } = require("basic-ftp");
+const { createCanvas } = require('canvas'); // Importing canvas
 
 const app = express();
 const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
@@ -20,23 +22,46 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' }));// For parsing JSON bodies
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-app.post('/upload', async (req, res) => {
-  const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Function to generate image from text using canvas
+const generateImageFromText = (orderDetails, orderId) => {
+  const canvas = createCanvas(600, 400);
+  const ctx = canvas.getContext('2d');
+  ctx.font = '14px Arial';
+  ctx.fillStyle = 'black';
+  ctx.fillText(orderDetails, 10, 30);
+
+  const imagePath = path.join(uploadDir, `${orderId}_details.png`);
+  const buffer = canvas.toBuffer('image/png');
+  fs.writeFileSync(imagePath, buffer);
+
+  return imagePath;
+};
+
+app.post('/upload', upload.single('file'), async (req, res) => {
+  const { orderId, productName, quantity, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
-    // Log order details for debugging
-    console.log("Received Order Details:", { orderId, orderData, paymentDetails, priceDetails, formContainer });
-
+    // Generate order details text
     const orderDetails = `
       Order ID: ${orderId}
-      Order Data: ${JSON.stringify(orderData, null, 2)}
+      Order Data: ${JSON.stringify(req.body.orderData, null, 2)}
       Payment Mode: ${paymentDetails.PaymentMode}
       Delivery Mode: ${paymentDetails.DeliveryMode}
       Total Price: ${priceDetails.totalPrice}
@@ -45,9 +70,20 @@ app.post('/upload', async (req, res) => {
       Customer Contact: ${formContainer.phone}
     `;
 
-    const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
-    fs.appendFileSync(detailsPath, orderDetails);
+    // Create a folder for the order (if not already exists)
+    const orderFolderPath = path.join(uploadDir, orderId);
+    if (!fs.existsSync(orderFolderPath)) {
+      fs.mkdirSync(orderFolderPath);
+    }
 
+    // Generate image from order details text
+    const imagePath = generateImageFromText(orderDetails, orderId);
+
+    // Save the order details as a text file in the folder
+    const detailsFilePath = path.join(orderFolderPath, 'orderdetails.txt');
+    fs.writeFileSync(detailsFilePath, orderDetails);
+
+    // Optionally, upload the image to FTP or handle it as needed
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -58,14 +94,15 @@ app.post('/upload', async (req, res) => {
       secure: false,
     });
 
-    await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
-    console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
+    // Upload the image file (example)
+    await client.uploadFrom(imagePath, `${orderId}_details.png`);
+    console.log(`Image for Order ID ${orderId} uploaded to FTP`);
 
     client.close();
 
     res.status(200).json({
-      message: 'Order details uploaded successfully!',
-      orderId,
+      message: 'Order uploaded successfully!',
+      orderFolder: orderFolderPath,
     });
   } catch (error) {
     console.error('Error processing the upload:', error);
