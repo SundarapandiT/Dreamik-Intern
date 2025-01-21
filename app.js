@@ -23,7 +23,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
 
-const uploadDir = path.join(__dirname, '/uploads');
+const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
@@ -35,6 +35,13 @@ app.post('/upload', async (req, res) => {
     // Log order details for debugging
     console.log("Received Order Details:", { orderId, orderData, paymentDetails, priceDetails, formContainer });
 
+    const formattedOrderData = orderData
+      .map(
+        (item, index) =>
+          `  ${index + 1}. Product Name: ${item.name}, Quantity: ${item.quantity}, Price: ${item.price}`
+      )
+      .join('\n');
+
     const orderDetails = `
       Order ID: ${orderId}
       Payment Mode: ${paymentDetails.PaymentMode}
@@ -43,27 +50,40 @@ app.post('/upload', async (req, res) => {
       Customer Name: ${formContainer.name}
       Customer Email: ${formContainer.email}
       Customer Contact: ${formContainer.phone}
+
+      Order Data:
+${formattedOrderData}
     `;
 
+    // Save as .txt file
     const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
     fs.writeFileSync(detailsPath, orderDetails);
 
-    // Create an image with order details
-    const canvas = createCanvas(800, 600);
+    // Create PNG with order details
+    const canvas = createCanvas(800, 1000); // Adjusted height for larger content
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 600);
+    ctx.fillRect(0, 0, 800, 1000);
     ctx.fillStyle = '#000000';
     ctx.font = '20px Arial';
     const lines = orderDetails.split('\n');
+
     lines.forEach((line, index) => {
-      ctx.fillText(line, 50, 50 + index * 30);
+      if (line.length > 90) {
+        const parts = line.match(/.{1,90}/g) || []; // Wrap text
+        parts.forEach((part, subIndex) => {
+          ctx.fillText(part, 50, 50 + (index + subIndex) * 30);
+        });
+      } else {
+        ctx.fillText(line, 50, 50 + index * 30);
+      }
     });
 
     const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(imagePath, buffer);
 
+    // Upload files to FTP
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -75,7 +95,7 @@ app.post('/upload', async (req, res) => {
     });
 
     const folderName = `order_${orderId}`;
-    await client.ensureDir(folderName);
+    await client.ensureDir(folderName); // Create folder if it doesn't exist
     await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
     await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
     console.log(`Order details for Order ID: ${orderId} uploaded to FTP in folder: ${folderName}`);
