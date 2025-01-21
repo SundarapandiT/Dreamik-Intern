@@ -125,12 +125,12 @@ ${formattedOrderData}
       }
 
       // Upload .txt order details file
-      await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
+      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
       console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
       // Upload each image
       for (const [index, imagePath] of imagePaths.entries()) {
-        const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
+        const remoteImagePath = `orderdetails_${orderId}_image${index + 1}.png`;
         await client.uploadFrom(imagePath, remoteImagePath);
         console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
       }
