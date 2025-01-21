@@ -106,14 +106,15 @@ ${formattedOrderData}
       let retries = 0;
       let success = false;
 
+      // Retry until folder is ensured
       while (retries < maxRetries) {
         try {
-          await client.ensureDir(folderName);
+          await client.ensureDir(folderName); // Ensure that the folder is created
           console.log(`Navigated to folder: ${folderName}`);
           success = true;
           break;
         } catch (err) {
-          console.warn(`Retrying navigation (${retries + 1}/${maxRetries})...`);
+          console.warn(`Retrying folder creation/navigation (${retries + 1}/${maxRetries})...`);
           retries++;
           await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
         }
@@ -123,16 +124,13 @@ ${formattedOrderData}
         throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
       }
 
-      // Ensure image directory exists (if it's a separate directory under the order folder)
-      const remoteImageDir = `${folderName}/images`; // Specify subdirectory for images
-      await client.ensureDir(remoteImageDir); // Ensure images subdirectory exists
-
-      // Upload files
+      // Upload .txt order details file
       await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
       console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
+      // Upload each image
       for (const [index, imagePath] of imagePaths.entries()) {
-        const remoteImagePath = `${remoteImageDir}/orderdetails_${orderId}_image${index + 1}.png`;
+        const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
         await client.uploadFrom(imagePath, remoteImagePath);
         console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
       }
