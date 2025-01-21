@@ -73,7 +73,7 @@ ${formattedOrderData}
     fs.writeFileSync(detailsPath, orderDetails);
     console.log(`Order details saved to: ${detailsPath}`);
 
-    // Save and process all images
+    // Save all base64 images in the orderData array
     const imagePaths = [];
     for (const [index, item] of orderData.entries()) {
       const orderImageBase64 = item.image;
@@ -87,7 +87,7 @@ ${formattedOrderData}
       const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}_image${index + 1}.png`);
       fs.writeFileSync(imagePath, imageBuffer);
       imagePaths.push(imagePath);
-      console.log(`Image ${index + 1} successfully saved at path: ${imagePath}`);
+      console.log(`Image ${index + 1} successfully saved at path:`, imagePath);
     }
 
     const client = new Client();
@@ -123,13 +123,16 @@ ${formattedOrderData}
         throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
       }
 
-      // Upload order details text file
-      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+      // Ensure image directory exists (if it's a separate directory under the order folder)
+      const remoteImageDir = `${folderName}/images`; // Specify subdirectory for images
+      await client.ensureDir(remoteImageDir); // Ensure images subdirectory exists
+
+      // Upload files
+      await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
       console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-      // Upload all images
       for (const [index, imagePath] of imagePaths.entries()) {
-        const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
+        const remoteImagePath = `${remoteImageDir}/orderdetails_${orderId}_image${index + 1}.png`;
         await client.uploadFrom(imagePath, remoteImagePath);
         console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
       }
