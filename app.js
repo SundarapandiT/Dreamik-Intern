@@ -86,18 +86,12 @@ ${formattedOrderData}
       secure: false,
     });
 
-    // Create the folder for the order on FTP server
-    const folderName = `uploads/order_${orderId}`;
-    await client.ensureDir('/');
-    await client.ensureDir(folderName);
-    console.log(`Folder ${folderName} created/verified on FTP`);
-
     // Upload order details file to FTP
-    await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
+    await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
     console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
     // Upload image file to FTP
-    await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
+    await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
     console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
 
     client.close();
