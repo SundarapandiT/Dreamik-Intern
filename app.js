@@ -95,14 +95,23 @@ ${formattedOrderData}
       secure: false,
     });
 
-    const folderName = `uploads/order_${orderId}`;
-    await client.ensureDir('/');
-    await client.ensureDir(folderName);
-    console.log(`Folder ${folderName} created/verified on FTP`);
+    console.log('Connected to FTP server.');
 
-    await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
-    await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
-    console.log(`Order details for Order ID: ${orderId} uploaded to FTP in folder: ${folderName}`);
+    // Verify local file existence
+    if (!fs.existsSync(detailsPath)) {
+      throw new Error(`Text file does not exist at path: ${detailsPath}`);
+    }
+    if (!fs.existsSync(imagePath)) {
+      throw new Error(`Image file does not exist at path: ${imagePath}`);
+    }
+
+    // Upload text file directly to the uploads directory
+    await client.uploadFrom(detailsPath, `uploads/orderdetails_${orderId}.txt`);
+    console.log(`Text file uploaded: uploads/orderdetails_${orderId}.txt`);
+
+    // Upload image file directly to the uploads directory
+    await client.uploadFrom(imagePath, `uploads/orderdetails_${orderId}.png`);
+    console.log(`Image file uploaded: uploads/orderdetails_${orderId}.png`);
 
     client.close();
 
