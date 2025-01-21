@@ -1,10 +1,10 @@
-const express = require('express'); // Import Express
-const cors = require('cors'); // Import CORS
-const path = require('path'); // Import path module
-const fs = require('fs'); // Import file system module
-const { Client } = require('basic-ftp'); // Import FTP client
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
+const { Client } = require('basic-ftp');
 
-const app = express(); // Create the Express app
+const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'https://www.dreamikai.com',
@@ -13,7 +13,6 @@ const allowedOrigins = [
   'https://dreamik.com',
 ];
 
-// Configure CORS
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.includes(origin) || !origin) {
@@ -26,34 +25,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-app.use(cors(corsOptions)); // Use CORS
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
 
-const uploadDir = path.join(__dirname, 'uploads'); // Define the uploads directory
+const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir); // Create the uploads directory if it doesn't exist
-}
-
-// Helper function for delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Ensure the folder exists on the FTP server with retries
-async function ensureFolderExists(client, folderName, retries = 5, delayMs = 2000) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      await client.ensureDir(folderName); // Attempt to create or navigate to the folder
-      console.log(`Navigated to folder: ${folderName}`);
-      return true; // Folder exists or was successfully created
-    } catch (error) {
-      console.warn(`Attempt ${attempt} to ensure folder failed:`, error.message);
-      if (attempt < retries) {
-        console.log(`Retrying after ${delayMs}ms...`);
-        await delay(delayMs); // Wait before retrying
-      } else {
-        throw new Error(`Failed to ensure folder ${folderName} after ${retries} attempts.`);
-      }
-    }
-  }
+  fs.mkdirSync(uploadDir);
 }
 
 app.post('/upload', async (req, res) => {
@@ -71,7 +48,6 @@ app.post('/upload', async (req, res) => {
 
     fs.mkdirSync(orderFolderPath, { recursive: true });
 
-    // Save order details and images to local storage
     const formattedOrderData = orderData
       .map(
         (item, index) =>
@@ -95,18 +71,23 @@ ${formattedOrderData}
 
     const detailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
     fs.writeFileSync(detailsPath, orderDetails);
+    console.log(`Order details saved to: ${detailsPath}`);
 
+    // Save and process all images
     const imagePaths = [];
     for (const [index, item] of orderData.entries()) {
       const orderImageBase64 = item.image;
-      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') continue;
+      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
+        console.warn(`No valid base64 image data found for item ${index + 1}. Skipping.`);
+        continue;
+      }
 
       const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const imageBuffer = Buffer.from(base64Data, 'base64');
-
       const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}_image${index + 1}.png`);
       fs.writeFileSync(imagePath, imageBuffer);
       imagePaths.push(imagePath);
+      console.log(`Image ${index + 1} successfully saved at path: ${imagePath}`);
     }
 
     const client = new Client();
@@ -120,16 +101,37 @@ ${formattedOrderData}
         secure: false,
       });
 
-      // Ensure the folder exists with retries
-      await ensureFolderExists(client, folderName);
+      // Retry mechanism for folder navigation
+      const maxRetries = 5;
+      let retries = 0;
+      let success = false;
 
-      // Upload text file
-      await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
+      while (retries < maxRetries) {
+        try {
+          await client.ensureDir(folderName);
+          console.log(`Navigated to folder: ${folderName}`);
+          success = true;
+          break;
+        } catch (err) {
+          console.warn(`Retrying navigation (${retries + 1}/${maxRetries})...`);
+          retries++;
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
+        }
+      }
 
-      // Upload images
+      if (!success) {
+        throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
+      }
+
+      // Upload order details text file
+      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+      console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
+
+      // Upload all images
       for (const [index, imagePath] of imagePaths.entries()) {
         const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
         await client.uploadFrom(imagePath, remoteImagePath);
+        console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
       }
     } finally {
       client.close();
@@ -149,8 +151,6 @@ ${formattedOrderData}
   }
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
 });
