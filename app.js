@@ -2,99 +2,70 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
+const { Client } = require("basic-ftp");
 
-// Define allowed origins
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://www.dreamikai.com',
-  'https://dreamikai.com',
-  'https://www.dreamik.com',
-  'https://dreamik.com',
-];
+const app = express();
+const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
 
-// Middleware to check the origin of the request
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.includes(origin) || !origin) {
-      // Allow requests with no origin (e.g., mobile apps or Postman)
       callback(null, true);
     } else {
-      // Reject requests from disallowed origins
       callback(new Error('Not allowed by CORS'), false);
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'],  // Allowed headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-// Initialize Express app
-const app = express();
-
-// Enable CORS with custom options
 app.use(cors(corsOptions));
+app.use(express.json()); // For parsing JSON bodies
 
-// Define the storage and upload logic for multer
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir); // Create the directory if it doesn't exist
+  fs.mkdirSync(uploadDir);
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir); // Specify the upload directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname); // Use the original file name
-  },
-});
-
-const upload = multer({ storage: storage });
-
-// Upload route to handle file upload and order details
-app.post('/upload', upload.single('file'), async (req, res) => {
-  const { productName, quantity, orderId } = req.body;
+app.post('/upload', async (req, res) => {
+  const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
-    if (req.file) {
-      console.log(`File uploaded: ${req.file.filename}`);
-    }
+    // Log order details for debugging
+    console.log("Received Order Details:", { orderId, orderData, paymentDetails, priceDetails, formContainer });
 
-    const productDetails = `Order ID: ${orderId}\nProduct: ${productName}\nQuantity: ${quantity}\n\n`;
+    const orderDetails = `
+      Order ID: ${orderId}
+      Order Data: ${JSON.stringify(orderData, null, 2)}
+      Payment Mode: ${paymentDetails.PaymentMode}
+      Delivery Mode: ${paymentDetails.DeliveryMode}
+      Total Price: ${priceDetails.totalPrice}
+      Customer Name: ${formContainer.name}
+      Customer Email: ${formContainer.email}
+      Customer Contact: ${formContainer.phone}
+    `;
 
-    // Append product details to a text file
     const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
-    fs.appendFileSync(detailsPath, productDetails);
+    fs.appendFileSync(detailsPath, orderDetails);
 
-    // If needed, implement FTP upload logic here
-    const { Client } = require("basic-ftp");
     const client = new Client();
     client.ftp.verbose = true;
 
-    const fileBuffer = fs.readFileSync(req.file.path); // Read file to upload
-    const fileName = req.file.filename; // Get file name from multer
+    await client.access({
+      host: '46.202.138.82',
+      user: 'u709132829.dreamikAi',
+      password: 'dreamikAi@123',
+      secure: false,
+    });
 
-    try {
-      await client.access({
-        host: '46.202.138.82',
-        user: 'u709132829.dreamikAi',
-        password: 'dreamikAi@123', // No password
-        secure: false, // Non-FTPS, set to true for FTPS
-      });
+    await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+    console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-      // Upload file to FTP server
-      await client.uploadFrom(fileBuffer, fileName);
-      console.log(`File ${fileName} uploaded to FTP`);
-    } catch (err) {
-      console.error("FTP upload failed", err);
-      throw err;
-    } finally {
-      client.close();
-    }
+    client.close();
 
     res.status(200).json({
-      message: 'Order uploaded successfully!',
-      fileName: req.file?.filename || 'No file uploaded',
+      message: 'Order details uploaded successfully!',
+      orderId,
     });
   } catch (error) {
     console.error('Error processing the upload:', error);
@@ -105,7 +76,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Start the server
 app.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
