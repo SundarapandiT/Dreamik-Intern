@@ -28,13 +28,20 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 app.post('/upload', async (req, res) => {
-  const { orderId, orderData, paymentDetails, priceDetails, formContainer, orderImageBase64 } = req.body;
+  const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
     console.log('Incoming order details:', req.body);
 
-    if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer || !orderImageBase64) {
+    if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
       throw new Error('Missing required fields in the order details.');
+    }
+
+    // Retrieve the base64 image from the first item in orderData (assuming the first item has the image)
+    const orderImageBase64 = orderData[0]?.image; // Assuming image is part of the first item
+
+    if (!orderImageBase64) {
+      throw new Error('No base64 image data found in order.');
     }
 
     const formattedOrderData = orderData
@@ -62,7 +69,7 @@ ${formattedOrderData}
     fs.appendFileSync(detailsPath, orderDetails); // Append content to the text file
     console.log(`Order details saved to: ${detailsPath}`);
 
-    // Convert base64 image to buffer and save as PNG
+    // Convert the base64 image to buffer and save as PNG
     const imageBuffer = Buffer.from(orderImageBase64, 'base64');
     const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
     fs.writeFileSync(imagePath, imageBuffer);
@@ -79,12 +86,18 @@ ${formattedOrderData}
       secure: false,
     });
 
-    // Upload order details file
-    await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+    // Create the folder for the order on FTP server
+    const folderName = `uploads/order_${orderId}`;
+    await client.ensureDir('/');
+    await client.ensureDir(folderName);
+    console.log(`Folder ${folderName} created/verified on FTP`);
+
+    // Upload order details file to FTP
+    await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
     console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-    // Upload image file
-    await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
+    // Upload image file to FTP
+    await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
     console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
 
     client.close();
