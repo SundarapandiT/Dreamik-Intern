@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { createCanvas } = require('canvas');
-const { Client } = require("basic-ftp");
+const { Client } = require('basic-ftp');
 
 const app = express();
 const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
@@ -32,9 +32,15 @@ app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
-    // Log order details for debugging
-    console.log("Received Order Details:", { orderId, orderData, paymentDetails, priceDetails, formContainer });
+    // Log incoming request body for debugging
+    console.log('Incoming order details:', req.body);
 
+    // Validate required fields
+    if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
+      throw new Error('Missing required fields in the order details.');
+    }
+
+    // Format the order data
     const formattedOrderData = orderData
       .map(
         (item, index) =>
@@ -55,11 +61,11 @@ app.post('/upload', async (req, res) => {
 ${formattedOrderData}
     `;
 
-    // Save as .txt file
+    // Save the details to a text file
     const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
     fs.writeFileSync(detailsPath, orderDetails);
 
-    // Create PNG with order details
+    // Generate an image of the order details
     const canvas = createCanvas(800, 1000); // Adjusted height for larger content
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
@@ -83,7 +89,7 @@ ${formattedOrderData}
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(imagePath, buffer);
 
-    // Upload files to FTP
+    // Upload the files to FTP
     const client = new Client();
     client.ftp.verbose = true;
 
