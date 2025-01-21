@@ -54,8 +54,8 @@ app.post('/upload', async (req, res) => {
       throw new Error('Missing required fields in the order details.');
     }
 
-    // Folder for current order
-    const folderName = `ORDER_${new Date().getTime()}_${formContainer.name}`;
+    // Create a folder for the current order
+    const folderName = `uploads/${formContainer.name}_ORDER_${new Date().getTime()}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
     await fs.mkdir(orderFolderPath, { recursive: true });
@@ -105,6 +105,7 @@ app.post('/upload', async (req, res) => {
 
     await Promise.all([...writeFilesPromises, ...imageWritePromises]);
 
+    // FTP Upload Section
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -117,18 +118,25 @@ app.post('/upload', async (req, res) => {
       });
 
       await client.ensureDir(folderName);
+      console.log(`Navigated to folder: ${folderName}`);
 
-      // Upload all files in parallel
-      const uploadPromises = [
-        client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`),
-        client.uploadFrom(customerDetailsPath, `customer_${orderId}.txt`),
-        ...orderDetails.images.map((imageFileName) => {
-          const localImagePath = path.join(orderFolderPath, imageFileName);
-          return client.uploadFrom(localImagePath, imageFileName);
-        }),
-      ];
+      // Upload files sequentially
+      await client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`);
+      console.log(`Uploaded order details file: orderdetails_${orderId}.txt`);
 
-      await Promise.all(uploadPromises);
+      await client.uploadFrom(customerDetailsPath, `customer_${orderId}.txt`);
+      console.log(`Uploaded customer details file: customer_${orderId}.txt`);
+
+      for (const imageFileName of orderDetails.images) {
+        const localImagePath = path.join(orderFolderPath, imageFileName);
+        console.log(`Uploading image: ${imageFileName}`);
+        await client.uploadFrom(localImagePath, imageFileName);
+        console.log(`Uploaded image: ${imageFileName}`);
+      }
+
+      console.log('All files uploaded successfully.');
+    } catch (error) {
+      console.error('FTP Upload Error:', error.message);
     } finally {
       client.close();
     }
