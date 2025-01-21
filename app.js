@@ -7,6 +7,8 @@ const { Client } = require("basic-ftp");
 const { createCanvas } = require('canvas'); // Importing canvas
 
 const app = express();
+
+// CORS setup should come before route handling
 const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
 
 const corsOptions = {
@@ -22,6 +24,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+// Define your routes below
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
