@@ -31,10 +31,10 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
-app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Directory for Storing Uploaded Files
+// Directory for storing uploaded files
 const uploadDir = path.join(__dirname, 'uploads');
 (async () => {
   try {
@@ -54,7 +54,7 @@ app.post('/upload', async (req, res) => {
       throw new Error('Missing required fields in the order details.');
     }
 
-    // Create a folder for the current order
+    // Create a unique folder for the order
     const folderName = `uploads/${formContainer.name}_ORDER_${new Date().getTime()}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
@@ -80,30 +80,39 @@ app.post('/upload', async (req, res) => {
       address: formContainer.address1,
     };
 
-    // Write order details and customer details as text files
+    // Write order and customer details as text files
     const orderDetailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
     const customerDetailsPath = path.join(orderFolderPath, `customer_${orderId}.txt`);
 
-    const writeFilesPromises = [
+    await Promise.all([
       fs.writeFile(orderDetailsPath, JSON.stringify(orderDetails, null, 2)), // Save JSON as text
       fs.writeFile(customerDetailsPath, JSON.stringify(customerDetails, null, 2)), // Save JSON as text
-    ];
+    ]);
 
-    // Save all images in parallel
+    // Save all images and populate the images array
     const imageWritePromises = orderData.map(async (item, index) => {
       const orderImageBase64 = item.image;
-      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') return null;
-
-      const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
-      const imageBuffer = Buffer.from(base64Data, 'base64');
       const imageFileName = `orderdetails_${orderId}_image${index + 1}.png`;
-      const imagePath = path.join(orderFolderPath, imageFileName);
 
-      await fs.writeFile(imagePath, imageBuffer);
-      orderDetails.images.push(imageFileName);
+      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
+        console.warn(`No valid image data for item ${index + 1}. Skipping.`);
+        return; // Skip this image
+      }
+
+      try {
+        const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        const imagePath = path.join(orderFolderPath, imageFileName);
+
+        await fs.writeFile(imagePath, imageBuffer);
+        console.log(`Saved image: ${imageFileName}`);
+        orderDetails.images.push(imageFileName); // Add to images array
+      } catch (err) {
+        console.error(`Failed to save image ${imageFileName}:`, err.message);
+      }
     });
 
-    await Promise.all([...writeFilesPromises, ...imageWritePromises]);
+    await Promise.all(imageWritePromises); // Wait for all images to be processed
 
     // FTP Upload Section
     const client = new Client();
@@ -155,7 +164,7 @@ app.post('/upload', async (req, res) => {
   }
 });
 
-// Start the Server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
