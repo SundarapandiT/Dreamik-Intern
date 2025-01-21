@@ -1,38 +1,3 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const { Client } = require('basic-ftp');
-
-const app = express();
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://www.dreamikai.com',
-  'https://dreamikai.com',
-  'https://www.dreamik.com',
-  'https://dreamik.com',
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'), false);
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
-
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
 app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
@@ -73,16 +38,23 @@ ${formattedOrderData}
     fs.writeFileSync(detailsPath, orderDetails);
     console.log(`Order details saved to: ${detailsPath}`);
 
-    const orderImageBase64 = orderData[0]?.image;
-    if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
-      throw new Error('No valid base64 image data found in the order.');
-    }
+    // Save all base64 images in the orderData array
+    const imagePaths = [];
+    for (const [index, item] of orderData.entries()) {
+      const orderImageBase64 = item.image;
+      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
+        console.warn(`No valid base64 image data found for item ${index + 1}. Skipping.`);
+        continue;
+      }
 
-    const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
-    const imageBuffer = Buffer.from(base64Data, 'base64');
-    const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}.png`);
-    fs.writeFileSync(imagePath, imageBuffer);
-    console.log('Image successfully saved at path:', imagePath);
+      const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}_image${index + 1}.png`);
+      fs.writeFileSync(imagePath, imageBuffer);
+      imagePaths.push(imagePath);
+      console.log(`Image ${index + 1} successfully saved at path:`, imagePath);
+    }
 
     const client = new Client();
     client.ftp.verbose = true;
@@ -95,40 +67,25 @@ ${formattedOrderData}
         secure: false,
       });
 
-      // Retry mechanism for folder navigation
-      const maxRetries = 5;
-      let retries = 0;
-      let success = false;
+      await client.ensureDir(folderName);
+      console.log(`Navigated to folder: ${folderName}`);
 
-      while (retries < maxRetries) {
-        try {
-          await client.ensureDir(folderName);
-          console.log(`Navigated to folder: ${folderName}`);
-          success = true;
-          break;
-        } catch (err) {
-          console.warn(`Retrying navigation (${retries + 1}/${maxRetries})...`);
-          retries++;
-          await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
-        }
-      }
-
-      if (!success) {
-        throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
-      }
-
-      // Upload files
-      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+      // Upload text file to FTP
+      await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
       console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-      await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
-      console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
+      // Upload all images to FTP
+      for (const [index, imagePath] of imagePaths.entries()) {
+        const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
+        await client.uploadFrom(imagePath, remoteImagePath);
+        console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
+      }
     } finally {
       client.close();
     }
 
     res.status(200).json({
-      message: `Order details and image uploaded successfully!`,
+      message: `Order details and images uploaded successfully!`,
       orderId,
       folderName,
     });
@@ -139,8 +96,4 @@ ${formattedOrderData}
       error: error.message,
     });
   }
-});
-
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
 });
