@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const { createCanvas } = require('canvas');
 const { Client } = require('basic-ftp');
+const base64Img = require('base64-img'); // You can use a library for easier base64 to image conversion
 
 const app = express();
 const allowedOrigins = ['http://localhost:5173', 'https://www.dreamikai.com', 'https://dreamikai.com', 'https://www.dreamik.com', 'https://dreamik.com'];
@@ -62,28 +62,16 @@ ${formattedOrderData}
     fs.appendFileSync(detailsPath, orderDetails); // Append content to the text file
     console.log(`Order details saved to: ${detailsPath}`);
 
-    const canvas = createCanvas(800, 1000);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 1000);
-    ctx.fillStyle = '#000000';
-    ctx.font = '20px Arial';
-    const lines = orderDetails.split('\n');
+    // Handle the base64 image and save it as a PNG
+    const orderImageBase64 = orderData[0]?.image; // Assuming the image is part of the first order item
+    if (!orderImageBase64) {
+      throw new Error('No base64 image data found in order.');
+    }
 
-    lines.forEach((line, index) => {
-      if (line.length > 90) {
-        const parts = line.match(/.{1,90}/g) || [];
-        parts.forEach((part, subIndex) => {
-          ctx.fillText(part, 50, 50 + (index + subIndex) * 30);
-        });
-      } else {
-        ctx.fillText(line, 50, 50 + index * 30);
-      }
-    });
-
+    // Convert base64 to PNG and save it
     const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync(imagePath, buffer);
+    const base64Data = orderImageBase64.replace(/^data:image\/png;base64,/, ''); // Remove data URI part
+    fs.writeFileSync(imagePath, Buffer.from(base64Data, 'base64'));
 
     const client = new Client();
     client.ftp.verbose = true;
