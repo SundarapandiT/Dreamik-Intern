@@ -109,6 +109,9 @@ ${formattedOrderData}
       await client.ensureDir(folderName);
       console.log(`Folder ${folderName} created on FTP server`);
 
+      // Introduce a small delay to ensure the folder is available
+      await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms delay
+
       // Change to the created folder
       await client.cd(folderName);
 
