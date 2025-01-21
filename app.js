@@ -97,26 +97,35 @@ ${formattedOrderData}
     const client = new Client();
     client.ftp.verbose = true;
 
-    await client.access({
-      host: '46.202.138.82',
-      user: 'u709132829.dreamikAi',
-      password: 'dreamikAi@123',
-      secure: false,
-    });
+    try {
+      await client.access({
+        host: '46.202.138.82',
+        user: 'u709132829.dreamikAi',
+        password: 'dreamikAi@123',
+        secure: false,
+      });
 
-    // Create the folder on the FTP server
-    await client.ensureDir(folderName);
-    console.log(`Folder ${folderName} created on FTP server`);
+      // Create and navigate to the folder on FTP
+      await client.ensureDir(folderName);
+      console.log(`Folder ${folderName} created on FTP server`);
 
-    // Upload order details file to FTP
-    await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
-    console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
+      // Change to the created folder
+      await client.cd(folderName);
 
-    // Upload image file to FTP
-    await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
-    console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
+      // Confirm current directory
+      const currentDir = await client.pwd();
+      console.log(`Current FTP directory: ${currentDir}`);
 
-    client.close();
+      // Upload order details file
+      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
+      console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
+
+      // Upload image file
+      await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
+      console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
+    } finally {
+      client.close();
+    }
 
     res.status(200).json({
       message: `Order details and image uploaded successfully!`,
