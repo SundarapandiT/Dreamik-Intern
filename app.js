@@ -102,27 +102,27 @@ ${formattedOrderData}
       });
 
       // Retry mechanism for folder navigation
-      const maxRetries = 5;
-      let retries = 0;
-      let success = false;
+      // const maxRetries = 5;
+      // let retries = 0;
+      // let success = false;
 
-      // Retry until folder is ensured
-      while (retries < maxRetries) {
-        try {
-          await client.ensureDir(folderName); // Ensure that the folder is created
-          console.log(`Navigated to folder: ${folderName}`);
-          success = true;
-          break;
-        } catch (err) {
-          console.warn(`Retrying folder creation/navigation (${retries + 1}/${maxRetries})...`);
-          retries++;
-          await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
-        }
-      }
+      // // Retry until folder is ensured
+      // while (retries < maxRetries) {
+      //   try {
+      //     await client.ensureDir(folderName); // Ensure that the folder is created
+      //     console.log(`Navigated to folder: ${folderName}`);
+      //     success = true;
+      //     break;
+      //   } catch (err) {
+      //     console.warn(`Retrying folder creation/navigation (${retries + 1}/${maxRetries})...`);
+      //     retries++;
+      //     await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
+      //   }
+      // }
 
-      if (!success) {
-        throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
-      }
+      // if (!success) {
+      //   throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
+      // }
 
       // Upload .txt order details file
       await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
