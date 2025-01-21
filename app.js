@@ -1,71 +1,106 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const multer = require('multer');
+const path = require('path');
 const cors = require('cors');
-const { Client } = require('basic-ftp');
 const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = 3000;
 
-// Middleware to parse JSON request bodies and handle larger payloads
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+// Middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://www.dreamikai.com',
+  'https://dreamikai.com',
+  'https://www.dreamik.com',
+  'https://dreamik.com',
+];
 
-// Enable CORS for localhost and your domain
-const corsOptions = {
-  origin: ["http://localhost:5173", "https://dreamikai.com"],
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// FTP upload function
-const uploadToFTP = async (fileBuffer, fileName) => {
-  const client = new Client();
-  client.ftp.verbose = true;
+// Define storage for Multer
+const uploadDir = path.join(__dirname, '../public_html/upload');
 
-  try {
-    await client.access({
-      host: 'dreamikai.com',
-      user: 'u709132829.dreamikai.com',
-      password: '', // No password
-      secure: false, // Non-FTPS, set to true for FTPS
-    });
+// Ensure the directory exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-    await client.ensureDir('public_html/uploads');
-    await client.uploadFrom(fileBuffer, fileName);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const orderId = req.body.orderId || Date.now(); // Use provided orderId or timestamp
+    const fileExt = path.extname(file.originalname);
+    cb(null, `orderdetails_${orderId}${fileExt}`);
+  },
+});
 
-    console.log(`Successfully uploaded ${fileName} to FTP server.`);
-  } catch (err) {
-    console.error('FTP upload failed', err);
-    throw err;
-  } finally {
-    client.close();
+// File filter for validation
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only PDF, JPEG, and PNG are allowed.'));
   }
 };
 
-// API to store order and upload order confirmation JSON
-app.post('/api/storeOrder', async (req, res) => {
-  const orderDetails = req.body;
+const upload = multer({ storage, fileFilter });
+
+// Route for file and data upload
+app.post('/upload', upload.single('file'), (req, res) => {
+  const { productName, quantity, orderId } = req.body;
 
   try {
-    // Create the JSON string for the order confirmation file
-    const orderConfirmationContent = JSON.stringify(orderDetails, null, 2);
-    const fileName = `${orderDetails.orderId}-orderconfirmation.json`;
+    if (req.file) {
+      console.log(`File uploaded: ${req.file.filename}`);
+    }
 
-    // Convert JSON string to Buffer for FTP upload
-    const fileBuffer = Buffer.from(orderConfirmationContent);
+    const productDetails = `Order ID: ${orderId}\nProduct: ${productName}\nQuantity: ${quantity}\n\n`;
 
-    await uploadToFTP(fileBuffer, fileName);
+    // Append product details to a text file
+    const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
+    fs.appendFileSync(detailsPath, productDetails);
 
-    res.status(200).send('Order saved and confirmation file uploaded.');
+    res.status(200).json({
+      message: 'Order uploaded successfully!',
+      fileName: req.file?.filename || 'No file uploaded',
+    });
   } catch (error) {
-    console.error('Error uploading confirmation file:', error);
-    res.status(500).send('Error uploading confirmation file to FTP.');
+    console.error('Error processing the upload:', error);
+    res.status(500).json({
+      message: 'Failed to upload order.',
+      error: error.message,
+    });
   }
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Global error handler for multer
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({ message: 'Multer error', error: err.message });
+  } else if (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  } else {
+    next();
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
