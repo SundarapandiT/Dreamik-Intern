@@ -1,3 +1,39 @@
+const express = require('express'); // Import Express
+const cors = require('cors'); // Import CORS
+const path = require('path'); // Import path module
+const fs = require('fs'); // Import file system module
+const { Client } = require('basic-ftp'); // Import FTP client
+
+const app = express(); // Create the Express app
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://www.dreamikai.com',
+  'https://dreamikai.com',
+  'https://www.dreamik.com',
+  'https://dreamik.com',
+];
+
+// Configure CORS
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions)); // Use CORS
+app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
+
+const uploadDir = path.join(__dirname, 'uploads'); // Define the uploads directory
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir); // Create the uploads directory if it doesn't exist
+}
+
 app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
@@ -96,4 +132,9 @@ ${formattedOrderData}
       error: error.message,
     });
   }
+});
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
