@@ -70,10 +70,23 @@ ${formattedOrderData}
     console.log(`Order details saved to: ${detailsPath}`);
 
     // Convert the base64 image to buffer and save as PNG
-    const imageBuffer = Buffer.from(orderImageBase64, 'base64');
-    const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
-    fs.writeFileSync(imagePath, imageBuffer);
-    console.log('Image saved at path:', imagePath);
+   // Check if the base64 image exists
+if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
+  throw new Error('No valid base64 image data found in the order.');
+}
+
+// Remove metadata if present (e.g., "data:image/png;base64,")
+const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
+
+// Convert the base64 string to a buffer
+const imageBuffer = Buffer.from(base64Data, 'base64');
+
+// Define the path and save the image
+const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
+fs.writeFileSync(imagePath, imageBuffer);
+
+console.log('Image successfully saved at path:', imagePath);
+
 
     // Upload the files to FTP
     const client = new Client();
