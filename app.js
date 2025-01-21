@@ -34,6 +34,28 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir); // Create the uploads directory if it doesn't exist
 }
 
+// Helper function for delay
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Ensure the folder exists on the FTP server with retries
+async function ensureFolderExists(client, folderName, retries = 5, delayMs = 2000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await client.ensureDir(folderName); // Attempt to create or navigate to the folder
+      console.log(`Navigated to folder: ${folderName}`);
+      return true; // Folder exists or was successfully created
+    } catch (error) {
+      console.warn(`Attempt ${attempt} to ensure folder failed:`, error.message);
+      if (attempt < retries) {
+        console.log(`Retrying after ${delayMs}ms...`);
+        await delay(delayMs); // Wait before retrying
+      } else {
+        throw new Error(`Failed to ensure folder ${folderName} after ${retries} attempts.`);
+      }
+    }
+  }
+}
+
 app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
@@ -49,6 +71,7 @@ app.post('/upload', async (req, res) => {
 
     fs.mkdirSync(orderFolderPath, { recursive: true });
 
+    // Save order details and images to local storage
     const formattedOrderData = orderData
       .map(
         (item, index) =>
@@ -72,16 +95,11 @@ ${formattedOrderData}
 
     const detailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
     fs.writeFileSync(detailsPath, orderDetails);
-    console.log(`Order details saved to: ${detailsPath}`);
 
-    // Save all base64 images in the orderData array
     const imagePaths = [];
     for (const [index, item] of orderData.entries()) {
       const orderImageBase64 = item.image;
-      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
-        console.warn(`No valid base64 image data found for item ${index + 1}. Skipping.`);
-        continue;
-      }
+      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') continue;
 
       const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
       const imageBuffer = Buffer.from(base64Data, 'base64');
@@ -89,7 +107,6 @@ ${formattedOrderData}
       const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}_image${index + 1}.png`);
       fs.writeFileSync(imagePath, imageBuffer);
       imagePaths.push(imagePath);
-      console.log(`Image ${index + 1} successfully saved at path:`, imagePath);
     }
 
     const client = new Client();
@@ -103,18 +120,16 @@ ${formattedOrderData}
         secure: false,
       });
 
-      await client.ensureDir(folderName);
-      console.log(`Navigated to folder: ${folderName}`);
+      // Ensure the folder exists with retries
+      await ensureFolderExists(client, folderName);
 
-      // Upload text file to FTP
+      // Upload text file
       await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
-      console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-      // Upload all images to FTP
+      // Upload images
       for (const [index, imagePath] of imagePaths.entries()) {
         const remoteImagePath = `${folderName}/orderdetails_${orderId}_image${index + 1}.png`;
         await client.uploadFrom(imagePath, remoteImagePath);
-        console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
       }
     } finally {
       client.close();
@@ -133,6 +148,7 @@ ${formattedOrderData}
     });
   }
 });
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
