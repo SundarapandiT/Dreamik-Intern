@@ -69,8 +69,8 @@ app.post('/upload', async (req, res) => {
         delPrice: priceDetails.delPrice,
         cod: priceDetails.cod,
         totalPrice: priceDetails.totalPrice,
-      },
-      images: [],
+      }
+      // images: [],
     };
 
     const customerDetails = {
@@ -106,7 +106,7 @@ app.post('/upload', async (req, res) => {
 
         await fs.writeFile(imagePath, imageBuffer);
         console.log(`Saved image: ${imageFileName}`);
-        orderDetails.images.push(imageFileName); // Add to images array
+        // orderDetails.images.push(imageFileName); // Add to images array
       } catch (err) {
         console.error(`Failed to save image ${imageFileName}:`, err.message);
       }
