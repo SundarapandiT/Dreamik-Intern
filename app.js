@@ -43,14 +43,11 @@ app.post('/upload', async (req, res) => {
       throw new Error('Missing required fields in the order details.');
     }
 
-    // Create a unique folder for the order
     const folderName = `${formContainer.name}ORDER_${new Date().getTime()}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
-    // Ensure the folder exists locally
     fs.mkdirSync(orderFolderPath, { recursive: true });
 
-    // Save order details to a text file
     const formattedOrderData = orderData
       .map(
         (item, index) =>
@@ -76,24 +73,17 @@ ${formattedOrderData}
     fs.writeFileSync(detailsPath, orderDetails);
     console.log(`Order details saved to: ${detailsPath}`);
 
-    // Save the base64 image from the first order item
     const orderImageBase64 = orderData[0]?.image;
     if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
       throw new Error('No valid base64 image data found in the order.');
     }
 
-    // Remove metadata if present (e.g., "data:image/png;base64,")
     const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
-
-    // Convert the base64 string to a buffer
     const imageBuffer = Buffer.from(base64Data, 'base64');
-
-    // Save the image to the unique folder
     const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}.png`);
     fs.writeFileSync(imagePath, imageBuffer);
     console.log('Image successfully saved at path:', imagePath);
 
-    // Upload the files to FTP
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -105,25 +95,32 @@ ${formattedOrderData}
         secure: false,
       });
 
-      // Create and navigate to the folder on FTP
-      await client.ensureDir(folderName);
-      console.log(`Folder ${folderName} created on FTP server`);
+      // Retry mechanism for folder navigation
+      const maxRetries = 5;
+      let retries = 0;
+      let success = false;
 
-      // Introduce a small delay to ensure the folder is available
-      await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms delay
+      while (retries < maxRetries) {
+        try {
+          await client.ensureDir(folderName);
+          console.log(`Navigated to folder: ${folderName}`);
+          success = true;
+          break;
+        } catch (err) {
+          console.warn(`Retrying navigation (${retries + 1}/${maxRetries})...`);
+          retries++;
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
+        }
+      }
 
-      // Change to the created folder
-      await client.cd(folderName);
+      if (!success) {
+        throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
+      }
 
-      // Confirm current directory
-      const currentDir = await client.pwd();
-      console.log(`Current FTP directory: ${currentDir}`);
-
-      // Upload order details file
+      // Upload files
       await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
       console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
 
-      // Upload image file
       await client.uploadFrom(imagePath, `orderdetails_${orderId}.png`);
       console.log(`Order image for Order ID: ${orderId} uploaded to FTP`);
     } finally {
