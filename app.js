@@ -47,7 +47,7 @@ app.post('/upload', async (req, res) => {
     const folderName = `${formContainer.name}ORDER_${new Date().getTime()}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
-    // Ensure the folder exists
+    // Ensure the folder exists locally
     fs.mkdirSync(orderFolderPath, { recursive: true });
 
     // Save order details to a text file
@@ -103,6 +103,10 @@ ${formattedOrderData}
       password: 'dreamikAi@123',
       secure: false,
     });
+
+    // Create the folder on the FTP server
+    await client.ensureDir(folderName);
+    console.log(`Folder ${folderName} created on FTP server`);
 
     // Upload order details file to FTP
     await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
