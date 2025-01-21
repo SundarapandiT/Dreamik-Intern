@@ -32,15 +32,12 @@ app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
-    // Log incoming request body for debugging
     console.log('Incoming order details:', req.body);
 
-    // Validate required fields
     if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
       throw new Error('Missing required fields in the order details.');
     }
 
-    // Format the order data
     const formattedOrderData = orderData
       .map(
         (item, index) =>
@@ -61,13 +58,11 @@ app.post('/upload', async (req, res) => {
 ${formattedOrderData}
     `;
 
-    // Save the details to a text file
-    const detailsPath = path.join(uploadDir,`orderdetails_${orderId}.txt`);
-    fs.writeFileSync(detailsPath, orderDetails);
-    console.log(detailsPath);
+    const detailsPath = path.join(uploadDir, `orderdetails_${orderId}.txt`);
+    fs.appendFileSync(detailsPath, orderDetails); // Append content to the text file
+    console.log(`Order details saved to: ${detailsPath}`);
 
-    // Generate an image of the order details
-    const canvas = createCanvas(800, 1000); // Adjusted height for larger content
+    const canvas = createCanvas(800, 1000);
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 800, 1000);
@@ -77,7 +72,7 @@ ${formattedOrderData}
 
     lines.forEach((line, index) => {
       if (line.length > 90) {
-        const parts = line.match(/.{1,90}/g) || []; // Wrap text
+        const parts = line.match(/.{1,90}/g) || [];
         parts.forEach((part, subIndex) => {
           ctx.fillText(part, 50, 50 + (index + subIndex) * 30);
         });
@@ -86,11 +81,10 @@ ${formattedOrderData}
       }
     });
 
-    const imagePath = path.join(uploadDir,`orderdetails_${orderId}.png`);
+    const imagePath = path.join(uploadDir, `orderdetails_${orderId}.png`);
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(imagePath, buffer);
 
-    // Upload the files to FTP
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -102,13 +96,10 @@ ${formattedOrderData}
     });
 
     const folderName = `uploads/order_${orderId}`;
-
-    // Check if directory exists and create it if necessary
     await client.ensureDir('/');
     await client.ensureDir(folderName);
     console.log(`Folder ${folderName} created/verified on FTP`);
 
-    // Upload files
     await client.uploadFrom(detailsPath, `${folderName}/orderdetails_${orderId}.txt`);
     await client.uploadFrom(imagePath, `${folderName}/orderdetails_${orderId}.png`);
     console.log(`Order details for Order ID: ${orderId} uploaded to FTP in folder: ${folderName}`);
