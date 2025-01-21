@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 const { Client } = require('basic-ftp');
 
 const app = express();
+const PORT = 3000;
+
+// Allowed Origins for CORS
 const allowedOrigins = [
   'http://localhost:5173',
   'https://www.dreamikai.com',
@@ -13,82 +16,94 @@ const allowedOrigins = [
   'https://dreamik.com',
 ];
 
+// CORS Configuration
 const corsOptions = {
   origin: function (origin, callback) {
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'), false);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
+// Middleware
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // For parsing JSON bodies
+app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 
+// Directory for Storing Uploaded Files
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+(async () => {
+  try {
+    await fs.mkdir(uploadDir, { recursive: true });
+    console.log(`Upload directory created at: ${uploadDir}`);
+  } catch (err) {
+    console.error('Failed to create upload directory:', err);
+  }
+})();
 
+// Upload Endpoint
 app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
 
   try {
-    console.log('Incoming order details:', req.body);
-
     if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
       throw new Error('Missing required fields in the order details.');
     }
 
-    const folderName = `uploads/${formContainer.name}ORDER_${new Date().getTime()}`;
+    // Folder for current order
+    const folderName = `ORDER_${new Date().getTime()}_${formContainer.name}`;
     const orderFolderPath = path.join(uploadDir, folderName);
 
-    fs.mkdirSync(orderFolderPath, { recursive: true });
+    await fs.mkdir(orderFolderPath, { recursive: true });
 
-    const formattedOrderData = orderData
-      .map(
-        (item, index) =>
-          `  ${index + 1}. Product Name: ${item.Name}, Quantity: ${item.quantity}, Price: ${item.price}`
-      )
-      .join('\n');
+    // Prepare order and customer details
+    const orderDetails = {
+      orderId,
+      paymentDetails,
+      priceDetails: {
+        prodPrice: priceDetails.prodPrice,
+        delPrice: priceDetails.delPrice,
+        cod: priceDetails.cod,
+        totalPrice: priceDetails.totalPrice,
+      },
+      images: [],
+    };
 
-    const orderDetails = `
-      Order ID: ${orderId}
-      Payment Mode: ${paymentDetails.PaymentMode}
-      Delivery Mode: ${paymentDetails.DeliveryMode}
-      Total Price: ${priceDetails.totalPrice}
-      Customer Name: ${formContainer.name}
-      Customer Email: ${formContainer.email}
-      Customer Contact: ${formContainer.phone}
-      Customer Address: ${formContainer.address1}
+    const customerDetails = {
+      name: formContainer.name,
+      email: formContainer.email,
+      contact: formContainer.phone,
+      address: formContainer.address1,
+    };
 
-      Order Data:
-${formattedOrderData}
-    `;
+    // Write order details and customer details as text files
+    const orderDetailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
+    const customerDetailsPath = path.join(orderFolderPath, `customer_${orderId}.txt`);
 
-    const detailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
-    fs.writeFileSync(detailsPath, orderDetails);
-    console.log(`Order details saved to: ${detailsPath}`);
+    const writeFilesPromises = [
+      fs.writeFile(orderDetailsPath, JSON.stringify(orderDetails, null, 2)), // Save JSON as text
+      fs.writeFile(customerDetailsPath, JSON.stringify(customerDetails, null, 2)), // Save JSON as text
+    ];
 
-    // Save all base64 images in the orderData array
-    const imagePaths = [];
-    for (const [index, item] of orderData.entries()) {
+    // Save all images in parallel
+    const imageWritePromises = orderData.map(async (item, index) => {
       const orderImageBase64 = item.image;
-      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
-        console.warn(`No valid base64 image data found for item ${index + 1}. Skipping.`);
-        continue;
-      }
+      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') return null;
 
-      const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, "");
+      const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
       const imageBuffer = Buffer.from(base64Data, 'base64');
-      const imagePath = path.join(orderFolderPath, `orderdetails_${orderId}_image${index + 1}.png`);
-      fs.writeFileSync(imagePath, imageBuffer);
-      imagePaths.push(imagePath);
-      console.log(`Image ${index + 1} successfully saved at path:`, imagePath);
-    }
+      const imageFileName = `orderdetails_${orderId}_image${index + 1}.png`;
+      const imagePath = path.join(orderFolderPath, imageFileName);
+
+      await fs.writeFile(imagePath, imageBuffer);
+      orderDetails.images.push(imageFileName);
+    });
+
+    await Promise.all([...writeFilesPromises, ...imageWritePromises]);
 
     const client = new Client();
     client.ftp.verbose = true;
@@ -101,45 +116,25 @@ ${formattedOrderData}
         secure: false,
       });
 
-      // Retry mechanism for folder navigation
-      // const maxRetries = 5;
-      // let retries = 0;
-      // let success = false;
+      await client.ensureDir(folderName);
 
-      // // Retry until folder is ensured
-      // while (retries < maxRetries) {
-      //   try {
-          await client.ensureDir(folderName); // Ensure that the folder is created
-          console.log(`Navigated to folder: ${folderName}`);
-      //     success = true;
-      //     break;
-      //   } catch (err) {
-      //     console.warn(`Retrying folder creation/navigation (${retries + 1}/${maxRetries})...`);
-      //     retries++;
-      //     await new Promise((resolve) => setTimeout(resolve, 500)); // Wait before retrying
-      //   }
-      // }
+      // Upload all files in parallel
+      const uploadPromises = [
+        client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`),
+        client.uploadFrom(customerDetailsPath, `customer_${orderId}.txt`),
+        ...orderDetails.images.map((imageFileName) => {
+          const localImagePath = path.join(orderFolderPath, imageFileName);
+          return client.uploadFrom(localImagePath, imageFileName);
+        }),
+      ];
 
-      // if (!success) {
-      //   throw new Error(`Failed to navigate to folder: ${folderName} after ${maxRetries} retries`);
-      // }
-
-      // Upload .txt order details file
-      await client.uploadFrom(detailsPath, `orderdetails_${orderId}.txt`);
-      console.log(`Order details for Order ID: ${orderId} uploaded to FTP`);
-
-      // Upload each image
-      for (const [index, imagePath] of imagePaths.entries()) {
-        const remoteImagePath = `orderdetails_${orderId}_image${index + 1}.png`;
-        await client.uploadFrom(imagePath, remoteImagePath);
-        console.log(`Order image ${index + 1} for Order ID: ${orderId} uploaded to FTP`);
-      }
+      await Promise.all(uploadPromises);
     } finally {
       client.close();
     }
 
     res.status(200).json({
-      message: `Order details and images uploaded successfully!`,
+      message: `Order details, customer details, and images uploaded successfully!`,
       orderId,
       folderName,
     });
@@ -152,6 +147,7 @@ ${formattedOrderData}
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+// Start the Server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
