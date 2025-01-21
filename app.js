@@ -69,8 +69,8 @@ app.post('/upload', async (req, res) => {
         delPrice: priceDetails.delPrice,
         cod: priceDetails.cod,
         totalPrice: priceDetails.totalPrice,
-      }
-      // images: [],
+      },
+      images: [],
     };
 
     const customerDetails = {
@@ -80,23 +80,18 @@ app.post('/upload', async (req, res) => {
       address: formContainer.address1,
     };
 
-    // Write order and customer details as text files
-    const orderDetailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
+    // Write customer details as text
     const customerDetailsPath = path.join(orderFolderPath, `customer_${orderId}.txt`);
+    await fs.writeFile(customerDetailsPath, JSON.stringify(customerDetails, null, 2));
 
-    await Promise.all([
-      fs.writeFile(orderDetailsPath, JSON.stringify(orderDetails, null, 2)), // Save JSON as text
-      fs.writeFile(customerDetailsPath, JSON.stringify(customerDetails, null, 2)), // Save JSON as text
-    ]);
-
-    // Save all images and populate the images array
+    // Save images and build file list
     const imageWritePromises = orderData.map(async (item, index) => {
       const orderImageBase64 = item.image;
       const imageFileName = `orderdetails_${orderId}_image${index + 1}.png`;
 
       if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
         console.warn(`No valid image data for item ${index + 1}. Skipping.`);
-        return; // Skip this image
+        return null; // Skip this image
       }
 
       try {
@@ -106,13 +101,14 @@ app.post('/upload', async (req, res) => {
 
         await fs.writeFile(imagePath, imageBuffer);
         console.log(`Saved image: ${imageFileName}`);
-        // orderDetails.images.push(imageFileName); // Add to images array
+        return imageFileName; // Return filename if saved successfully
       } catch (err) {
         console.error(`Failed to save image ${imageFileName}:`, err.message);
+        return null;
       }
     });
 
-    await Promise.all(imageWritePromises); // Wait for all images to be processed
+    const imageFileNames = (await Promise.all(imageWritePromises)).filter(Boolean);
 
     // FTP Upload Section
     const client = new Client();
@@ -129,21 +125,25 @@ app.post('/upload', async (req, res) => {
       await client.ensureDir(folderName);
       console.log(`Navigated to folder: ${folderName}`);
 
-      // Upload files sequentially
-      await client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`);
-      console.log(`Uploaded order details file: orderdetails_${orderId}.txt`);
-
+      // Upload customer details
       await client.uploadFrom(customerDetailsPath, `customer_${orderId}.txt`);
       console.log(`Uploaded customer details file: customer_${orderId}.txt`);
 
-      for (const imageFileName of orderDetails.images) {
+      // Upload images and record successfully uploaded files
+      for (const imageFileName of imageFileNames) {
         const localImagePath = path.join(orderFolderPath, imageFileName);
         console.log(`Uploading image: ${imageFileName}`);
         await client.uploadFrom(localImagePath, imageFileName);
         console.log(`Uploaded image: ${imageFileName}`);
+        orderDetails.images.push(imageFileName); // Add uploaded image to orderDetails
       }
 
-      console.log('All files uploaded successfully.');
+      // Write order details after FTP upload to include the images array
+      const orderDetailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
+      await fs.writeFile(orderDetailsPath, JSON.stringify(orderDetails, null, 2));
+      console.log(`Order details saved with images: ${orderDetailsPath}`);
+      await client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`);
+      console.log(`Uploaded order details file: orderdetails_${orderId}.txt`);
     } catch (error) {
       console.error('FTP Upload Error:', error.message);
     } finally {
