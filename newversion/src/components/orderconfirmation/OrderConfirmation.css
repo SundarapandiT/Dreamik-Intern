@@ -1,0 +1,150 @@
+/* General styling */
+.order-confirmation {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  padding: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+p {
+  font-size: 1rem;
+  color: #555;
+  margin: 5px 0;
+}
+#thank
+{
+  color: green;
+  font-weight: 600;
+}
+.fas.fa-check-circle {
+  font-size: 1.5rem; /* Adjust the size */
+  color: green; /* Set the color */
+}
+
+strong {
+  font-weight: bold;
+}
+
+/* Order Summary, Payment Details, Delivery Details */
+.order-summary,
+.payment-details,
+.delivery-details {
+  background-color: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+}
+
+.order-summary ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.order-summary li {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+/* Order ID */
+.order-id {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.order-id p {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Button Styling */
+button.back-to-home {
+  padding: 15px 25px;
+  font-size: 1.2rem;
+  background-color: #3399cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button.back-to-home:hover {
+  background-color: #267bbd;
+}
+
+/* Responsive Design - Mobile */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .order-summary,
+  .payment-details,
+  .delivery-details,
+  .order-id {
+    width: 90%;
+  }
+
+  button.back-to-home {
+    font-size: 1rem;
+    padding: 12px 20px;
+  }
+}
+
+/* Responsive Design - Small Mobile */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+  }
+
+  .order-summary,
+  .payment-details,
+  .delivery-details,
+  .order-id {
+    padding: 15px;
+  }
+
+  button.back-to-home {
+    font-size: 0.9rem;
+    padding: 10px 15px;
+  }
+}

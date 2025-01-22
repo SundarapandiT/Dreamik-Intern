@@ -931,7 +931,7 @@ const NSPersonalize = () => {
           </div>
             <label id="price">Rs.price {product.price * quantity}</label>
             <br />
-            <button id="add" onClick={handleAddToCart}><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+            <button id="add" onClick={handleAddToCart}><i className="fa-solid fa-cart-plus"></i> Add to cart</button>
             <br />
             
             <button id="whatsapp" onClick={sendToWhatsApp}>
@@ -942,7 +942,7 @@ const NSPersonalize = () => {
             </button> <br />
           </div>
           <button id='goback' onClick={() => navigate(-1)} style={{ marginBottom: '20px' }}>
-          <i class="fa-solid fa-arrow-left"></i> Go Back
+          <i className="fa-solid fa-arrow-left"></i> Go Back
       </button>
         </div>
       </div>
