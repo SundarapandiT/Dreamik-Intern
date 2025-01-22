@@ -101,14 +101,21 @@ app.post('/upload', async (req, res) => {
 
         await fs.writeFile(imagePath, imageBuffer);
         console.log(`Saved image: ${imageFileName}`);
-        return imageFileName; // Return filename if saved successfully
+
+        // Include image name and quantity
+        return {
+          name: imageFileName,
+          quantity: item.quantity || 1, // Default to 1 if quantity is not provided
+        };
       } catch (err) {
         console.error(`Failed to save image ${imageFileName}:`, err.message);
         return null;
       }
     });
 
-    const imageFileNames = (await Promise.all(imageWritePromises)).filter(Boolean);
+    // Wait for all images to be processed and filter out any null results
+    const imageDetails = (await Promise.all(imageWritePromises)).filter(Boolean);
+    orderDetails.images = imageDetails; // Add image details (name and quantity) to orderDetails
 
     // FTP Upload Section
     const client = new Client();
@@ -130,12 +137,11 @@ app.post('/upload', async (req, res) => {
       console.log(`Uploaded customer details file: customer_${orderId}.txt`);
 
       // Upload images and record successfully uploaded files
-      for (const imageFileName of imageFileNames) {
-        const localImagePath = path.join(orderFolderPath, imageFileName);
-        console.log(`Uploading image: ${imageFileName}`);
-        await client.uploadFrom(localImagePath, imageFileName);
-        console.log(`Uploaded image: ${imageFileName}`);
-        orderDetails.images.push(imageFileName); // Add uploaded image to orderDetails
+      for (const image of imageDetails) {
+        const localImagePath = path.join(orderFolderPath, image.name);
+        console.log(`Uploading image: ${image.name}`);
+        await client.uploadFrom(localImagePath, image.name);
+        console.log(`Uploaded image: ${image.name}`);
       }
 
       // Write order details after FTP upload to include the images array
