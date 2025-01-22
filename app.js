@@ -1,7 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs').promises;
 const { Client } = require('basic-ftp');
 
 const app = express();
@@ -34,17 +32,6 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Directory for storing uploaded files
-const uploadDir = path.join(__dirname, 'uploads');
-(async () => {
-  try {
-    await fs.mkdir(uploadDir, { recursive: true });
-    console.log(`Upload directory created at: ${uploadDir}`);
-  } catch (err) {
-    console.error('Failed to create upload directory:', err);
-  }
-})();
-
 // Upload Endpoint
 app.post('/upload', async (req, res) => {
   const { orderId, orderData, paymentDetails, priceDetails, formContainer } = req.body;
@@ -53,12 +40,6 @@ app.post('/upload', async (req, res) => {
     if (!orderId || !orderData || !paymentDetails || !priceDetails || !formContainer) {
       throw new Error('Missing required fields in the order details.');
     }
-
-    // Create a unique folder for the order
-    const folderName = `uploads/${formContainer.name}_ORDER_${new Date().getTime()}`;
-    const orderFolderPath = path.join(uploadDir, folderName);
-
-    await fs.mkdir(orderFolderPath, { recursive: true });
 
     // Prepare order and customer details
     const orderDetails = {
@@ -80,44 +61,6 @@ app.post('/upload', async (req, res) => {
       address: formContainer.address1,
     };
 
-    // Write customer details as text
-    const customerDetailsPath = path.join(orderFolderPath, `customer_${orderId}.txt`);
-    await fs.writeFile(customerDetailsPath, JSON.stringify(customerDetails, null, 2));
-
-    // Save images and build file list
-    const imageWritePromises = orderData.map(async (item, index) => {
-      const orderImageBase64 = item.image;
-      const imageFileName = `orderdetails_${orderId}_image${index + 1}.png`;
-
-      if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
-        console.warn(`No valid image data for item ${index + 1}. Skipping.`);
-        return null; // Skip this image
-      }
-
-      try {
-        const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-        const imagePath = path.join(orderFolderPath, imageFileName);
-
-        await fs.writeFile(imagePath, imageBuffer);
-        console.log(`Saved image: ${imageFileName}`);
-
-        // Include image name and quantity
-        return {
-          name: imageFileName,
-          quantity: item.quantity || 1, // Default to 1 if quantity is not provided
-        };
-      } catch (err) {
-        console.error(`Failed to save image ${imageFileName}:`, err.message);
-        return null;
-      }
-    });
-
-    // Wait for all images to be processed and filter out any null results
-    const imageDetails = (await Promise.all(imageWritePromises)).filter(Boolean);
-    orderDetails.images = imageDetails; // Add image details (name and quantity) to orderDetails
-
-    // FTP Upload Section
     const client = new Client();
     client.ftp.verbose = true;
 
@@ -129,29 +72,43 @@ app.post('/upload', async (req, res) => {
         secure: false,
       });
 
+      const folderName = `uploads/${formContainer.name}_ORDER_${new Date().getTime()}`;
       await client.ensureDir(folderName);
       console.log(`Navigated to folder: ${folderName}`);
 
-      // Upload customer details
-      await client.uploadFrom(customerDetailsPath, `customer_${orderId}.txt`);
-      console.log(`Uploaded customer details file: customer_${orderId}.txt`);
+      // Upload customer details directly
+      const customerDetailsData = JSON.stringify(customerDetails, null, 2);
+      await client.uploadFrom(Buffer.from(customerDetailsData), `customer_${orderId}.txt`);
+      console.log(`Uploaded customer details: customer_${orderId}.txt`);
 
-      // Upload images and record successfully uploaded files
-      for (const image of imageDetails) {
-        const localImagePath = path.join(orderFolderPath, image.name);
-        console.log(`Uploading image: ${image.name}`);
-        await client.uploadFrom(localImagePath, image.name);
-        console.log(`Uploaded image: ${image.name}`);
+      // Directly upload each image
+      for (const [index, item] of orderData.entries()) {
+        const orderImageBase64 = item.image;
+        if (!orderImageBase64 || typeof orderImageBase64 !== 'string') {
+          console.warn(`No valid image data for item ${index + 1}. Skipping.`);
+          continue;
+        }
+
+        const imageFileName = `orderdetails_${orderId}_image${index + 1}.png`;
+        const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+
+        await client.uploadFrom(imageBuffer, `${imageFileName}`);
+        console.log(`Uploaded image: ${imageFileName}`);
+
+        orderDetails.images.push({
+          name: imageFileName,
+          quantity: item.quantity || 1, // Default to 1 if quantity is not provided
+        });
       }
 
-      // Write order details after FTP upload to include the images array
-      const orderDetailsPath = path.join(orderFolderPath, `orderdetails_${orderId}.txt`);
-      await fs.writeFile(orderDetailsPath, JSON.stringify(orderDetails, null, 2));
-      console.log(`Order details saved with images: ${orderDetailsPath}`);
-      await client.uploadFrom(orderDetailsPath, `orderdetails_${orderId}.txt`);
-      console.log(`Uploaded order details file: orderdetails_${orderId}.txt`);
+      // Upload order details
+      const orderDetailsData = JSON.stringify(orderDetails, null, 2);
+      await client.uploadFrom(Buffer.from(orderDetailsData), `orderdetails_${orderId}.txt`);
+      console.log(`Uploaded order details: orderdetails_${orderId}.txt`);
     } catch (error) {
       console.error('FTP Upload Error:', error.message);
+      throw error;
     } finally {
       client.close();
     }
@@ -159,7 +116,6 @@ app.post('/upload', async (req, res) => {
     res.status(200).json({
       message: `Order details, customer details, and images uploaded successfully!`,
       orderId,
-      folderName,
     });
   } catch (error) {
     console.error('Error processing the upload:', error);
