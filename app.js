@@ -105,8 +105,10 @@ app.post('/upload', async (req, res) => {
         console.log(`Uploaded image: ${imageFileName}`);
 
         orderDetails.images.push({
-          name: imageFileName,
+          originalname:item.Name,
+          savedname: imageFileName,
           quantity: item.quantity || 1, // Default to 1 if quantity is not provided
+          labeltype:item.labeltype,
         });
       }
 
