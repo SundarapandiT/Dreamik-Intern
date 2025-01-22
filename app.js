@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { Client } = require('basic-ftp');
+const { PassThrough } = require('stream');
 
 const app = express();
 const PORT = 3000;
@@ -31,6 +32,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Helper: Convert Buffer to Readable Stream
+function bufferToStream(buffer) {
+  const stream = new PassThrough();
+  stream.end(buffer);
+  return stream;
+}
 
 // Upload Endpoint
 app.post('/upload', async (req, res) => {
@@ -78,7 +86,7 @@ app.post('/upload', async (req, res) => {
 
       // Upload customer details directly
       const customerDetailsData = JSON.stringify(customerDetails, null, 2);
-      await client.uploadFrom(Buffer.from(customerDetailsData), `customer_${orderId}.txt`);
+      await client.uploadFrom(bufferToStream(Buffer.from(customerDetailsData)), `customer_${orderId}.txt`);
       console.log(`Uploaded customer details: customer_${orderId}.txt`);
 
       // Directly upload each image
@@ -93,7 +101,7 @@ app.post('/upload', async (req, res) => {
         const base64Data = orderImageBase64.replace(/^data:image\/\w+;base64,/, '');
         const imageBuffer = Buffer.from(base64Data, 'base64');
 
-        await client.uploadFrom(imageBuffer, `${imageFileName}`);
+        await client.uploadFrom(bufferToStream(imageBuffer), `${imageFileName}`);
         console.log(`Uploaded image: ${imageFileName}`);
 
         orderDetails.images.push({
@@ -104,7 +112,7 @@ app.post('/upload', async (req, res) => {
 
       // Upload order details
       const orderDetailsData = JSON.stringify(orderDetails, null, 2);
-      await client.uploadFrom(Buffer.from(orderDetailsData), `orderdetails_${orderId}.txt`);
+      await client.uploadFrom(bufferToStream(Buffer.from(orderDetailsData)), `orderdetails_${orderId}.txt`);
       console.log(`Uploaded order details: orderdetails_${orderId}.txt`);
     } catch (error) {
       console.error('FTP Upload Error:', error.message);
