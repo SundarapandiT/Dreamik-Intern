@@ -76,7 +76,8 @@ const generateRandomString = (length = 5) => {
   const string=generateRandomString();
     // Create a unique folder for the upload
     const f=`C${req.body.name || 'unknown_user'}-${req.body.orderId}-${string}-v1`
-    const folderName = `CustomerUploads/${f}`; 
+    const folderName = `
+/home/u709132829/domains/dreamikai.com/CustomerUploads/${f}`; 
     await client.ensureDir(folderName);
     console.log(`Navigated to folder: ${folderName}`);
 
