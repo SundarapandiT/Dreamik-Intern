@@ -65,7 +65,8 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
     });
 
     // Create a unique folder for the upload
-    const folderName = `uploads/${req.body.name || 'unknown_user'}_ORDER_${req.body.orderId}`; 
+    const f=`${req.body.name || 'unknown_user'}_ORDER_${req.body.orderId}`
+    const folderName = `uploads/${f}`; 
     await client.ensureDir(folderName);
     console.log(`Navigated to folder: ${folderName}`);
 
@@ -74,7 +75,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       const paymentFile = req.files['payment'][0];
       const paymentStream = PassThrough();
       paymentStream.end(paymentFile.buffer);
-      await uploadStreamToFTP(paymentStream, `Payment-${folderName}.txt`, client);
+      await uploadStreamToFTP(paymentStream, `Payment-${f}.txt`, client);
     }
 
     // Upload `info.json`
@@ -82,7 +83,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       const infoFile = req.files['info'][0];
       const infoStream = PassThrough();
       infoStream.end(infoFile.buffer);
-      await uploadStreamToFTP(infoStream, `Info-${folderName}.txt`, client);
+      await uploadStreamToFTP(infoStream, `Info-${f}.txt`, client);
     }
 
     // Upload images
@@ -90,7 +91,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       for (const [index, imageFile] of req.files['images'].entries()) {
         const imageStream = PassThrough();
         imageStream.end(imageFile.buffer);
-        const remoteFilePath = `${folderName}image_${index + 1}.png`;
+        const remoteFilePath = `${f}image_${index + 1}.png`;
         await uploadStreamToFTP(imageStream, remoteFilePath, client);
       }
     }
