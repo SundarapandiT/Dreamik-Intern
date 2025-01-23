@@ -38,8 +38,11 @@ const upload = multer({ storage });
 
 // FTP Upload Logic using Streams
 const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
+  const passThrough = new PassThrough();
+  stream.pipe(passThrough);
+
   try {
-    await client.uploadFrom(stream, remoteFilePath);
+    await client.uploadFrom(passThrough, remoteFilePath);
     console.log(`Uploaded: ${remoteFilePath}`);
   } catch (err) {
     console.error(`Failed to upload ${remoteFilePath}: ${err.message}`);
@@ -48,86 +51,90 @@ const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
 };
 
 // POST Endpoint for uploading files directly to FTP
-app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]), async (req, res) => {
-  const client = new Client();
-  client.ftp.verbose = true;
+app.post(
+  '/upload',
+  upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]),
+  async (req, res) => {
+    const client = new Client();
+    client.ftp.verbose = true;
 
-  const generateRandomString = (length = 5) => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-  };
-
-  try {
-    // Connect to the FTP server
-    await client.access({
-      host: '46.202.138.82',
-      user: 'u709132829.dreamikaishop',
-      password: 'dreamikAi@123',
-      secure: false,
-    });
-
-    const string = generateRandomString();
-    const f = `${req.body.name || 'unknown_user'}-${req.body.orderId}-${string}-v1`;
-
-    // Define folder paths
-    const customerUploadFolder = `/CustomerUploads/${f}`;
-    const customerDisplayFolder = `/CustomerDisplayItems/${f}`;
-
-    // Ensure directories exist
-    await client.ensureDir(customerUploadFolder);
-    await client.ensureDir(customerDisplayFolder);
-
-    console.log(`Folders created: ${customerUploadFolder}, ${customerDisplayFolder}`);
-
-    // Helper function to upload to both directories
-    const uploadFileToBothFolders = async (buffer, filename) => {
-      // Create streams from the buffer for each upload
-      const stream1 = PassThrough();
-      const stream2 = PassThrough();
-      stream1.end(buffer);
-      stream2.end(buffer);
-
-      // Upload to both directories
-      await Promise.all([
-        uploadStreamToFTP(stream1, `${customerUploadFolder}/${filename}`, client),
-        uploadStreamToFTP(stream2, `${customerDisplayFolder}/${filename}`, client),
-      ]);
+    const generateRandomString = (length = 5) => {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      return result;
     };
 
-    // Upload `payment.json` only to `CustomerUploads`
-    if (req.files['payment']) {
-      const paymentFile = req.files['payment'][0];
-      const paymentStream = PassThrough();
-      paymentStream.end(paymentFile.buffer);
-      await uploadStreamToFTP(paymentStream, `${customerUploadFolder}/Payment-${f}.txt`, client);
-    }
+    try {
+      // Connect to the FTP server
+      await client.access({
+        host: '46.202.138.82',
+        user: 'u709132829.dreamikaishop',
+        password: 'dreamikAi@123',
+        secure: false,
+      });
 
-    // Upload `info.json` to both folders
-    if (req.files['info']) {
-      const infoFile = req.files['info'][0];
-      await uploadFileToBothFolders(infoFile.buffer, `Info-${f}.txt`);
-    }
+      const string = generateRandomString();
+      const f = `${req.body.name || 'unknown_user'}-${req.body.orderId}-${string}-v1`;
 
-    // Upload images to both folders
-    if (req.files['images']) {
-      for (const [index, imageFile] of req.files['images'].entries()) {
-        const filename = `${f}-image_${index + 1}.png`;
-        await uploadFileToBothFolders(imageFile.buffer, filename);
+      // Define folder paths
+      const customerUploadFolder = `/CustomerUploads/${f}`;
+      const customerDisplayFolder = `/CustomerDisplayItems/${f}`;
+
+      // Ensure directories exist
+      await client.ensureDir(customerUploadFolder);
+      await client.ensureDir(customerDisplayFolder);
+
+      console.log(`Folders created: ${customerUploadFolder}, ${customerDisplayFolder}`);
+
+      // Helper function to upload to both directories sequentially
+      const uploadFileToBothFolders = async (buffer, filename) => {
+        // Create streams from the buffer for each upload
+        const stream1 = PassThrough();
+        const stream2 = PassThrough();
+        stream1.end(buffer);
+        stream2.end(buffer);
+
+        // Upload to the first directory
+        await uploadStreamToFTP(stream1, `${customerUploadFolder}/${filename}`, client);
+
+        // Upload to the second directory
+        await uploadStreamToFTP(stream2, `${customerDisplayFolder}/${filename}`, client);
+      };
+
+      // Upload `payment.json` only to `CustomerUploads`
+      if (req.files['payment']) {
+        const paymentFile = req.files['payment'][0];
+        const paymentStream = PassThrough();
+        paymentStream.end(paymentFile.buffer);
+        await uploadStreamToFTP(paymentStream, `${customerUploadFolder}/Payment-${f}.txt`, client);
       }
-    }
 
-    res.status(200).json({ message: 'Files uploaded successfully.' });
-  } catch (error) {
-    console.error('Error during upload:', error);
-    res.status(500).json({ error: 'Failed to upload files.' });
-  } finally {
-    client.close();
+      // Upload `info.json` to both folders
+      if (req.files['info']) {
+        const infoFile = req.files['info'][0];
+        await uploadFileToBothFolders(infoFile.buffer, `Info-${f}.txt`);
+      }
+
+      // Upload images to both folders
+      if (req.files['images']) {
+        for (const [index, imageFile] of req.files['images'].entries()) {
+          const filename = `${f}-image_${index + 1}.png`;
+          await uploadFileToBothFolders(imageFile.buffer, filename);
+        }
+      }
+
+      res.status(200).json({ message: 'Files uploaded successfully.' });
+    } catch (error) {
+      console.error('Error during upload:', error);
+      res.status(500).json({ error: 'Failed to upload files.' });
+    } finally {
+      client.close();
+    }
   }
-});
+);
 
 // Start the server
 app.listen(PORT, () => {
