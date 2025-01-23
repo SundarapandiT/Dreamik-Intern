@@ -69,14 +69,14 @@ const generateRandomString = (length = 5) => {
     // Connect to the FTP server
     await client.access({
       host: '46.202.138.82',
-      user: 'u709132829.dreamikAi',
+      user: 'u709132829.dreamikaishop',
       password: 'dreamikAi@123',
       secure: false,
     });
   const string=generateRandomString();
     // Create a unique folder for the upload
     const f=`C${req.body.name || 'unknown_user'}-${req.body.orderId}-${string}-v1`
-    const folderName = `../CustomerUploads/${f}`; 
+    const folderName = `CustomerUploads/${f}`; 
     await client.ensureDir(folderName);
     console.log(`Navigated to folder: ${folderName}`);
 
