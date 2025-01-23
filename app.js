@@ -87,13 +87,17 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
 
     console.log(`Folders created: ${customerUploadFolder}, ${customerDisplayFolder}`);
 
-    // Helper function to upload to both directories
+    // Helper function to upload to both directories sequentially
     const uploadFileToBothFolders = async (stream, filename) => {
-      const uploadPromises = [
-        uploadStreamToFTP(stream, `${filename}`, client),
-        uploadStreamToFTP(stream, `${filename}`, client),
-      ];
-      await Promise.all(uploadPromises);
+      // Upload to the first folder
+      await uploadStreamToFTP(stream, `${filename}`, client);
+
+      // Reset the stream for the second upload
+      const secondStream = PassThrough();
+      stream.pipe(secondStream); // Reuse the original stream data
+
+      // Upload to the second folder
+      await uploadStreamToFTP(secondStream, `{filename}`, client);
     };
 
     // Upload `payment.json` only to `CustomerUploads`
@@ -114,14 +118,12 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
 
     // Upload images to both folders
     if (req.files['images']) {
-      const uploadImagePromises = req.files['images'].map((imageFile, index) => {
+      for (const [index, imageFile] of req.files['images'].entries()) {
         const imageStream = PassThrough();
         imageStream.end(imageFile.buffer);
         const filename = `image_${index + 1}.png`;
-        return uploadFileToBothFolders(imageStream, filename);
-      });
-
-      await Promise.all(uploadImagePromises);
+        await uploadFileToBothFolders(imageStream, filename);
+      }
     }
 
     res.status(200).json({ message: 'Files uploaded successfully.' });
@@ -132,6 +134,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
     client.close();
   }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
