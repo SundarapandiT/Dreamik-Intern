@@ -121,7 +121,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       for (const [index, imageFile] of req.files['images'].entries()) {
         const imageStream = PassThrough();
         imageStream.end(imageFile.buffer);
-        const filename = `image_${index + 1}.png`;
+        const filename = `${f}-image_${index + 1}.png`;
         await uploadFileToBothFolders(imageStream, filename);
       }
     }
