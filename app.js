@@ -54,6 +54,16 @@ const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
 app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]), async (req, res) => {
   const client = new Client();
   client.ftp.verbose = true;
+  // Function to generate random 5-letter string
+const generateRandomString = (length = 5) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+};
+
 
   try {
     // Connect to the FTP server
@@ -63,10 +73,10 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       password: 'dreamikAi@123',
       secure: false,
     });
-
+  const string=generateRandomString();
     // Create a unique folder for the upload
-    const f=`${req.body.name || 'unknown_user'}_ORDER_${req.body.orderId}`
-    const folderName = `uploads/${f}`; 
+    const f=`C${req.body.name || 'unknown_user'}-${req.body.orderId}-${string}-v1`
+    const folderName = `../CustomerUploads/${f}`; 
     await client.ensureDir(folderName);
     console.log(`Navigated to folder: ${folderName}`);
 
@@ -91,7 +101,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       for (const [index, imageFile] of req.files['images'].entries()) {
         const imageStream = PassThrough();
         imageStream.end(imageFile.buffer);
-        const remoteFilePath = `${f}image_${index + 1}.png`;
+        const remoteFilePath = `${f}-${imageFile}.png`;
         await uploadStreamToFTP(imageStream, remoteFilePath, client);
       }
     }
