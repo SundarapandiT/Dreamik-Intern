@@ -90,14 +90,14 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
     // Helper function to upload to both directories sequentially
     const uploadFileToBothFolders = async (stream, filename) => {
       // Upload to the first folder
-      await uploadStreamToFTP(stream, `${filename}`, client);
+      await uploadStreamToFTP(stream, `${customerUploadFolder}/${filename}`, client);
 
       // Reset the stream for the second upload
       const secondStream = PassThrough();
       stream.pipe(secondStream); // Reuse the original stream data
 
       // Upload to the second folder
-      await uploadStreamToFTP(secondStream, `{filename}`, client);
+      await uploadStreamToFTP(secondStream, `${customerDisplayFolder}/${filename}`, client);
     };
 
     // Upload `payment.json` only to `CustomerUploads`
@@ -105,7 +105,7 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
       const paymentFile = req.files['payment'][0];
       const paymentStream = PassThrough();
       paymentStream.end(paymentFile.buffer);
-      await uploadStreamToFTP(paymentStream, `Payment-${f}.txt`, client);
+      await uploadStreamToFTP(paymentStream, `${customerUploadFolder}/Payment-${f}.txt`, client);
     }
 
     // Upload `info.json` to both folders
