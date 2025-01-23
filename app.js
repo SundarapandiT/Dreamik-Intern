@@ -38,11 +38,8 @@ const upload = multer({ storage });
 
 // FTP Upload Logic using Streams
 const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
-  const passThrough = new PassThrough();
-  stream.pipe(passThrough);
-
   try {
-    await client.uploadFrom(passThrough, remoteFilePath);
+    await client.uploadFrom(stream, remoteFilePath);
     console.log(`Uploaded: ${remoteFilePath}`);
   } catch (err) {
     console.error(`Failed to upload ${remoteFilePath}: ${err.message}`);
@@ -50,7 +47,6 @@ const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
   }
 };
 
-// POST Endpoint for uploading files directly to FTP
 // POST Endpoint for uploading files directly to FTP
 app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]), async (req, res) => {
   const client = new Client();
@@ -87,17 +83,19 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
 
     console.log(`Folders created: ${customerUploadFolder}, ${customerDisplayFolder}`);
 
-    // Helper function to upload to both directories sequentially
-    const uploadFileToBothFolders = async (stream, filename) => {
-      // Upload to the first folder
-      await uploadStreamToFTP(stream, `${customerUploadFolder}/${filename}`, client);
+    // Helper function to upload to both directories
+    const uploadFileToBothFolders = async (buffer, filename) => {
+      // Create streams from the buffer for each upload
+      const stream1 = PassThrough();
+      const stream2 = PassThrough();
+      stream1.end(buffer);
+      stream2.end(buffer);
 
-      // Reset the stream for the second upload
-      const secondStream = PassThrough();
-      stream.pipe(secondStream); // Reuse the original stream data
-
-      // Upload to the second folder
-      await uploadStreamToFTP(secondStream, `${customerDisplayFolder}/${filename}`, client);
+      // Upload to both directories
+      await Promise.all([
+        uploadStreamToFTP(stream1, `${customerUploadFolder}/${filename}`, client),
+        uploadStreamToFTP(stream2, `${customerDisplayFolder}/${filename}`, client),
+      ]);
     };
 
     // Upload `payment.json` only to `CustomerUploads`
@@ -111,18 +109,14 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
     // Upload `info.json` to both folders
     if (req.files['info']) {
       const infoFile = req.files['info'][0];
-      const infoStream = PassThrough();
-      infoStream.end(infoFile.buffer);
-      await uploadFileToBothFolders(infoStream, `Info-${f}.txt`);
+      await uploadFileToBothFolders(infoFile.buffer, `Info-${f}.txt`);
     }
 
     // Upload images to both folders
     if (req.files['images']) {
       for (const [index, imageFile] of req.files['images'].entries()) {
-        const imageStream = PassThrough();
-        imageStream.end(imageFile.buffer);
         const filename = `${f}-image_${index + 1}.png`;
-        await uploadFileToBothFolders(imageStream, filename);
+        await uploadFileToBothFolders(imageFile.buffer, filename);
       }
     }
 
@@ -134,7 +128,6 @@ app.post('/upload', upload.fields([{ name: 'payment' }, { name: 'info' }, { name
     client.close();
   }
 });
-
 
 // Start the server
 app.listen(PORT, () => {
