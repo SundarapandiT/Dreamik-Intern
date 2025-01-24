@@ -142,6 +142,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
   client.ftp.verbose = true;
 
   try {
+    // Connect to the FTP server
     await client.access({
       host: '46.202.138.82',
       user: 'u709132829.dreamikaishop',
@@ -149,12 +150,13 @@ app.get('/retrieve/:orderId', async (req, res) => {
       secure: false,
     });
 
-    const customerDisplayFolder = `/CustomerDisplayItems`;
+    const customerDisplayFolder = '/CustomerDisplayItems';
     const folders = await client.list(customerDisplayFolder);
 
     console.log('All folders:', folders.map((folder) => folder.name));
     console.log('Searching for Order ID:', orderId);
 
+    // Find the folder matching the orderId
     const matchingFolder = folders.find((folder) => folder.name.includes(orderId));
     if (!matchingFolder) {
       console.error(`No folder found for Order ID: ${orderId}`);
@@ -163,6 +165,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     console.log('Matching folder:', matchingFolder.name);
 
+    // List files in the folder
     const folderPath = `${customerDisplayFolder}/${matchingFolder.name}`;
     const files = await client.list(folderPath);
 
@@ -171,6 +174,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
       return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
     }
 
+    // Retrieve the files and convert them to base64
     const fileData = await Promise.all(
       files.map(async (file) => {
         const buffer = await client.downloadToBuffer(`${folderPath}/${file.name}`);
@@ -180,6 +184,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
       })
     );
 
+    // Send the response with the folder and file data
     res.status(200).json({ folderName: matchingFolder.name, files: fileData });
   } catch (error) {
     console.error('Error retrieving files:', error);
@@ -188,8 +193,6 @@ app.get('/retrieve/:orderId', async (req, res) => {
     client.close();
   }
 });
-
-
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
