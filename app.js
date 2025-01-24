@@ -177,7 +177,10 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Retrieve the files and convert them to base64
     const fileData = await Promise.all(
       files.map(async (file) => {
-        const buffer = await client.downloadToBuffer(`${folderPath}/${file.name}`);
+        const filePath = `${folderPath}/${file.name}`;
+        const buffer = await client.download(filePath, fs.createWriteStream(path.join(__dirname, file.name)));
+        
+        // Convert buffer to base64
         const base64Content = buffer.toString('base64');
         const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
         return { name: file.name, type: fileType, content: base64Content };
@@ -193,6 +196,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     client.close();
   }
 });
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
