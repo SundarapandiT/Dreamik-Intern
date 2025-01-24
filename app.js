@@ -142,7 +142,6 @@ app.get('/retrieve/:orderId', async (req, res) => {
   client.ftp.verbose = true;
 
   try {
-    // Connect to the FTP server
     await client.access({
       host: '46.202.138.82',
       user: 'u709132829.dreamikaishop',
@@ -150,49 +149,40 @@ app.get('/retrieve/:orderId', async (req, res) => {
       secure: false,
     });
 
-    // Find folder matching the orderId in CustomerDisplayItems
     const customerDisplayFolder = `/CustomerDisplayItems`;
     const folders = await client.list(customerDisplayFolder);
 
-    const matchingFolder = folders.find((folder) =>
-      folder.name.includes(orderId)
-    );
+    console.log('All folders:', folders.map((folder) => folder.name));
+    console.log('Searching for Order ID:', orderId);
 
+    const matchingFolder = folders.find((folder) => folder.name.includes(orderId));
     if (!matchingFolder) {
-      return res
-        .status(404)
-        .json({ error: `No folder found for Order ID: ${orderId}` });
+      console.error(`No folder found for Order ID: ${orderId}`);
+      return res.status(404).json({ error: `No folder found for Order ID: ${orderId}` });
     }
 
-    // List files in the matched folder
+    console.log('Matching folder:', matchingFolder.name);
+
     const folderPath = `${customerDisplayFolder}/${matchingFolder.name}`;
     const files = await client.list(folderPath);
 
-    if (files.length === 0) {
-      return res
-        .status(404)
-        .json({ error: `No files found in folder: ${matchingFolder.name}` });
+    if (!files.length) {
+      console.error(`No files found in folder: ${matchingFolder.name}`);
+      return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
     }
 
-    // Fetch actual file contents and encode them
-    const fileData = [];
-    for (const file of files) {
-      const filePath = `${folderPath}/${file.name}`;
-      const stream = await client.downloadToBuffer(filePath);
-      const base64Content = stream.toString('base64'); // Convert to Base64
-      fileData.push({
-        name: file.name,
-        type: file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text',
-        content: base64Content,
-      });
-    }
+    const fileData = await Promise.all(
+      files.map(async (file) => {
+        const buffer = await client.downloadToBuffer(`${folderPath}/${file.name}`);
+        const base64Content = buffer.toString('base64');
+        const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
+        return { name: file.name, type: fileType, content: base64Content };
+      })
+    );
 
-    res.status(200).json({
-      folderName: matchingFolder.name,
-      files: fileData,
-    });
+    res.status(200).json({ folderName: matchingFolder.name, files: fileData });
   } catch (error) {
-    console.error('Error during file retrieval:', error);
+    console.error('Error retrieving files:', error);
     res.status(500).json({ error: 'Failed to retrieve files.' });
   } finally {
     client.close();
