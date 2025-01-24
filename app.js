@@ -180,9 +180,13 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const fileData = await Promise.all(
       files.map(async (file) => {
         const filePath = `${folderPath}/${file.name}`;
-        const buffer = await client.download(filePath, fs.createWriteStream(path.join(__dirname, file.name)));
-        
-        // Convert buffer to base64
+        const localFilePath = path.join(__dirname, file.name);  // Ensure local path
+
+        console.log(`Downloading file from: ${filePath} to ${localFilePath}`);
+        await client.downloadTo(localFilePath, filePath);  // Download file using downloadTo
+
+        // Read the downloaded file and convert it to base64
+        const buffer = fs.readFileSync(localFilePath);
         const base64Content = buffer.toString('base64');
         const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
         return { name: file.name, type: fileType, content: base64Content };
