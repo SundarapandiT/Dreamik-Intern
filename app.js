@@ -79,7 +79,8 @@ app.post(
       });
 
       const string = generateRandomString();
-      const f = `${req.body.name || ''}-${req.body.orderId}-${string}-v1`;
+      // const f = `${req.body.name || ''}-${req.body.orderId}-${string}-v1`;
+      const f = `${req.body.orderId}-${string}-v1`;
 
       // Define folder paths
       const customerUploadFolder = `/CustomerUploads/${f}`;
