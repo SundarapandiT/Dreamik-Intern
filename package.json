@@ -27,7 +27,7 @@
     "stream",
     "nodejs",
     "express",
-    "redis"  // Add Redis to keywords
+    "redis"  
   ],
   "author": "Sundarapandi",
   "license": "Annamalai University"
