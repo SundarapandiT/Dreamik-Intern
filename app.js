@@ -142,7 +142,7 @@ app.post(
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
-  client.ftp.verbose = true;
+  client.ftp.verbose = false; // Disable verbose logging for better performance
 
   try {
     // Connect to the FTP server
@@ -156,7 +156,6 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const customerDisplayFolder = '/CustomerDisplayItems';
     const folders = await client.list(customerDisplayFolder);
 
-    console.log('All folders:', folders.map((folder) => folder.name));
     console.log('Searching for Order ID:', orderId);
 
     // Find the folder matching the orderId
@@ -177,25 +176,13 @@ app.get('/retrieve/:orderId', async (req, res) => {
       return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
     }
 
-    // Create an array to store the file data
-    const fileData = [];
-
-    // Download each file sequentially
-    for (const file of files) {
-      const filePath = `${folderPath}/${file.name}`;
-      const localFilePath = path.join(__dirname, file.name);  // Ensure local path
-
-      console.log(`Downloading file from: ${filePath} to ${localFilePath}`);
-      await client.downloadTo(localFilePath, filePath);  // Download file using downloadTo
-
-      // Read the downloaded file and convert it to base64
-      const buffer = fs.readFileSync(localFilePath);
-      const base64Content = buffer.toString('base64');
-      const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
-      
-      // Push the file data to the array
-      fileData.push({ name: file.name, type: fileType, content: base64Content });
-    }
+    // Map file metadata (name, size, type)
+    const fileData = files.map((file) => ({
+      name: file.name,
+      size: file.size,
+      type: file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text',
+      modifiedAt: file.rawModifiedAt || null,
+    }));
 
     // Send the response with the folder and file data
     res.status(200).json({ folderName: matchingFolder.name, files: fileData });
