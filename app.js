@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Client } = require('basic-ftp');
 const multer = require('multer');
 const { PassThrough } = require('stream');
-const fs = require('fs'); 
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
@@ -52,10 +52,15 @@ const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
   }
 };
 
-// POST Endpoint for uploading files directly to FTP
+// POST Endpoint for uploading files including ZIPs to FTP
 app.post(
   '/upload',
-  upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]),
+  upload.fields([
+    { name: 'payment' },
+    { name: 'info' },
+    { name: 'images' },
+    { name: 'zipfiles' },
+  ]),
   async (req, res) => {
     const client = new Client();
     client.ftp.verbose = true;
@@ -93,7 +98,6 @@ app.post(
 
       // Helper function to upload to both directories sequentially
       const uploadFileToBothFolders = async (buffer, filename) => {
-        // Create streams from the buffer for each upload
         const stream1 = PassThrough();
         const stream2 = PassThrough();
         stream1.end(buffer);
@@ -128,6 +132,14 @@ app.post(
         }
       }
 
+      // Upload ZIP files to both folders
+      if (req.files['zipfiles']) {
+        for (const [index, zipFile] of req.files['zipfiles'].entries()) {
+          const filename = `${f}-file_${index + 1}.zip`;
+          await uploadFileToBothFolders(zipFile.buffer, filename);
+        }
+      }
+
       res.status(200).json({ message: 'Files uploaded successfully.' });
     } catch (error) {
       console.error('Error during upload:', error);
@@ -137,7 +149,8 @@ app.post(
     }
   }
 );
-// Endpoint to retrieve files by orderId and return actual file data
+
+// Endpoint to retrieve files by orderId including ZIPs
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
@@ -182,16 +195,16 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Download each file sequentially
     for (const file of files) {
       const filePath = `${folderPath}/${file.name}`;
-      const localFilePath = path.join(__dirname, file.name);  // Ensure local path
+      const localFilePath = path.join(__dirname, file.name); // Ensure local path
 
       console.log(`Downloading file from: ${filePath} to ${localFilePath}`);
-      await client.downloadTo(localFilePath, filePath);  // Download file using downloadTo
+      await client.downloadTo(localFilePath, filePath); // Download file using downloadTo
 
       // Read the downloaded file and convert it to base64
       const buffer = fs.readFileSync(localFilePath);
       const base64Content = buffer.toString('base64');
       const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
-      
+
       // Push the file data to the array
       fileData.push({ name: file.name, type: fileType, content: base64Content });
     }
@@ -210,5 +223,3 @@ app.get('/retrieve/:orderId', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// successfully woring /upload and /get both
