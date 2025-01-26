@@ -5,7 +5,6 @@ const multer = require('multer');
 const { PassThrough } = require('stream');
 const fs = require('fs'); 
 const path = require('path');
-const zlib = require('zlib'); // Import the zlib module
 
 const app = express();
 const PORT = 3000;
@@ -53,19 +52,7 @@ const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
   }
 };
 
-// Compress data using zlib
-const compressBuffer = async (buffer) => {
-  return new Promise((resolve, reject) => {
-    zlib.gzip(buffer, (err, compressedBuffer) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(compressedBuffer);
-    });
-  });
-};
-
-// Updated POST Endpoint for uploading files with compression
+// POST Endpoint for uploading files directly to FTP
 app.post(
   '/upload',
   upload.fields([{ name: 'payment' }, { name: 'info' }, { name: 'images' }]),
@@ -104,40 +91,44 @@ app.post(
 
       console.log(`Folders created: ${customerUploadFolder}, ${customerDisplayFolder}`);
 
-      // Helper function to upload compressed data
-      const uploadCompressedFile = async (buffer, filename, folderPath) => {
-        const compressedBuffer = await compressBuffer(buffer); // Compress the buffer
-        const stream = PassThrough();
-        stream.end(compressedBuffer);
+      // Helper function to upload to both directories sequentially
+      const uploadFileToBothFolders = async (buffer, filename) => {
+        // Create streams from the buffer for each upload
+        const stream1 = PassThrough();
+        const stream2 = PassThrough();
+        stream1.end(buffer);
+        stream2.end(buffer);
 
-        // Upload the compressed file
-        await uploadStreamToFTP(stream, `${folderPath}/${filename}.gz`, client);
-        console.log(`Uploaded compressed file: ${folderPath}/${filename}.gz`);
+        // Upload to the first directory
+        await uploadStreamToFTP(stream1, `${customerUploadFolder}/${filename}`, client);
+
+        // Upload to the second directory
+        await uploadStreamToFTP(stream2, `${customerDisplayFolder}/${filename}`, client);
       };
 
-      // Upload and compress `payment.json`
+      // Upload `payment.json` only to `CustomerUploads`
       if (req.files['payment']) {
         const paymentFile = req.files['payment'][0];
-        await uploadCompressedFile(paymentFile.buffer, `Payment-${f}`, customerUploadFolder);
+        const paymentStream = PassThrough();
+        paymentStream.end(paymentFile.buffer);
+        await uploadStreamToFTP(paymentStream, `${customerUploadFolder}/Payment-${f}.txt`, client);
       }
 
-      // Upload and compress `info.json`
+      // Upload `info.json` to both folders
       if (req.files['info']) {
         const infoFile = req.files['info'][0];
-        await uploadCompressedFile(infoFile.buffer, `Info-${f}`, customerUploadFolder);
-        await uploadCompressedFile(infoFile.buffer, `Info-${f}`, customerDisplayFolder);
+        await uploadFileToBothFolders(infoFile.buffer, `Info-${f}.txt`);
       }
 
-      // Upload and compress images
+      // Upload images to both folders
       if (req.files['images']) {
         for (const [index, imageFile] of req.files['images'].entries()) {
-          const filename = `${f}-image_${index + 1}`;
-          await uploadCompressedFile(imageFile.buffer, filename, customerUploadFolder);
-          await uploadCompressedFile(imageFile.buffer, filename, customerDisplayFolder);
+          const filename = `${f}-image_${index + 1}.png`;
+          await uploadFileToBothFolders(imageFile.buffer, filename);
         }
       }
 
-      res.status(200).json({ message: 'Files uploaded and compressed successfully.' });
+      res.status(200).json({ message: 'Files uploaded successfully.' });
     } catch (error) {
       console.error('Error during upload:', error);
       res.status(500).json({ error: 'Failed to upload files.' });
@@ -146,7 +137,6 @@ app.post(
     }
   }
 );
-
 // Endpoint to retrieve files by orderId and return actual file data
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
