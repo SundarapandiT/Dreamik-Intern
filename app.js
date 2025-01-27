@@ -219,14 +219,17 @@ app.get('/retrieve/:orderId', async (req, res) => {
       return stream;
     };
 
-    // Download .txt and .zip files in parallel
-    const streams = await Promise.all([...txtFiles, ...zipFiles].map(downloadFile));
-
-    // Add each file to the archive
-    streams.forEach((stream, index) => {
-      const file = [...txtFiles, ...zipFiles][index];
+    // Download and append the .txt files to the archive one by one
+    for (const file of txtFiles) {
+      const stream = await downloadFile(file);
       archive.append(stream, { name: file.name });
-    });
+    }
+
+    // Download and append the .zip files to the archive one by one
+    for (const file of zipFiles) {
+      const stream = await downloadFile(file);
+      archive.append(stream, { name: file.name });
+    }
 
     // Finalize the archive
     await archive.finalize();
@@ -238,6 +241,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     console.log('FTP connection closed.');
   }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
