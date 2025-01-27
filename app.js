@@ -196,7 +196,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     console.log(`Downloading ZIP file from: ${zipFilePath} to ${localZipPath}`);
 
-    // Download the ZIP file using client.downloadTo
+    // Download the ZIP file
     await client.downloadTo(localZipPath, zipFilePath);
 
     // Extract the ZIP file
@@ -206,14 +206,14 @@ app.get('/retrieve/:orderId', async (req, res) => {
       .pipe(unzipper.Extract({ path: extractedFolderPath }))
       .promise();
 
-    // Read the extracted images and convert to Base64
+    // Read the extracted files (both images and the .txt file)
     const extractedFiles = await fs.promises.readdir(extractedFolderPath);
     const imageData = [];
 
     for (const file of extractedFiles) {
       const filePath = path.join(extractedFolderPath, file);
 
-      // Only process image files (e.g., .png, .jpg)
+      // Process image files (e.g., .png, .jpg)
       if (file.endsWith('.png') || file.endsWith('.jpg')) {
         const buffer = await fs.promises.readFile(filePath);
         imageData.push({
@@ -223,15 +223,26 @@ app.get('/retrieve/:orderId', async (req, res) => {
         });
       }
 
-      // Check for .txt file with product details
+      // Check for the .txt file with product details
       if (file.endsWith('.txt')) {
         const buffer = await fs.promises.readFile(filePath, 'utf-8');
-        const productDetails = JSON.parse(buffer);
-        imageData.push({
-          name: file,
-          type: 'text',
-          content: productDetails,
-        });
+        console.log('Product details:', buffer); // Log the .txt content
+
+        try {
+          const productDetails = JSON.parse(buffer); // Parse the JSON content from .txt file
+          imageData.push({
+            name: file,
+            type: 'text',
+            content: productDetails,
+          });
+        } catch (error) {
+          console.error(`Error parsing JSON from file ${file}:`, error);
+          imageData.push({
+            name: file,
+            type: 'text',
+            content: 'Error parsing product details.',
+          });
+        }
       }
     }
 
@@ -248,6 +259,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     client.close();
   }
 });
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
