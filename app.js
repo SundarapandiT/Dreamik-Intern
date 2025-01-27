@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { Client } = require('basic-ftp');
 const multer = require('multer');
-const { PassThrough } = require('stream');
+const PassThrough = require('stream').PassThrough;;
 // const { Client } = require('ftp');
 const archiver = require('archiver');
 const path = require('path');
@@ -158,12 +158,10 @@ const FTP_CONFIG = {
   secure: false,
 };
 
-// Retrieve files for a given order ID and send them as a ZIP
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
-  client.ftp.verbose = true;
-
+  
   try {
     console.log('Connecting to FTP server...');
     await client.access(FTP_CONFIG);
@@ -194,8 +192,17 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     console.log(`Found ${files.length} files in folder: ${matchingFolder.name}`);
 
-    // Create a ZIP archive for all files in the folder
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    // Separate the .txt and .zip files
+    const txtFiles = files.filter((file) => file.name.endsWith('.txt'));
+    const zipFiles = files.filter((file) => file.name.endsWith('.zip'));
+
+    if (txtFiles.length === 0 || zipFiles.length === 0) {
+      console.error('Required files not found.');
+      return res.status(404).json({ error: 'Required .txt or .zip files not found.' });
+    }
+
+    // Create a ZIP archive for all files
+    const archive = archiver('zip', { zlib: { level: 1 } }); // Faster compression level
 
     // Set response headers for the ZIP file
     res.attachment(`${matchingFolder.name}.zip`);
@@ -204,25 +211,25 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Pipe the archive to the response
     archive.pipe(res);
 
-    // Add each file to the archive
-    for (const file of files) {
+    // Function to download a file as a stream
+    const downloadFile = async (file) => {
       const filePath = `${folderPath}/${file.name}`;
-      console.log(`Adding file to ZIP: ${filePath}`);
+      const stream = await client.downloadTo(PassThrough(), filePath);
+      return stream;
+    };
 
-      // Download the file as a stream
-      const stream = client.get(filePath);
+    // Download .txt and .zip files in parallel
+    const streams = await Promise.all([...txtFiles, ...zipFiles].map(downloadFile));
 
-      // Check if the file is a .txt file for product details
-      if (file.name.endsWith('.txt')) {
-        console.log(`Found .txt file: ${file.name}`);
-      }
-
-      // Append the stream to the archive
+    // Add each file to the archive
+    streams.forEach((stream, index) => {
+      const file = [...txtFiles, ...zipFiles][index];
       archive.append(stream, { name: file.name });
-    }
+    });
 
-    // Finalize the archive (important to complete the ZIP file)
+    // Finalize the archive
     await archive.finalize();
+    
   } catch (error) {
     console.error('Error retrieving files:', error.message);
     res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
@@ -231,7 +238,6 @@ app.get('/retrieve/:orderId', async (req, res) => {
     console.log('FTP connection closed.');
   }
 });
-
 
 // Start the server
 app.listen(PORT, () => {
