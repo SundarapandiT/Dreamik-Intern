@@ -162,6 +162,8 @@ app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
 
+  let responseSent = false; // Guard to ensure only one response is sent
+
   try {
     console.log('Connecting to FTP server...');
     await client.access(FTP_CONFIG);
@@ -176,7 +178,10 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const matchingFolder = folders.find((folder) => folder.name.includes(orderId));
     if (!matchingFolder) {
       console.error(`No folder found for Order ID: ${orderId}`);
-      return res.status(404).json({ error: `Folder for Order ID ${orderId} not found` });
+      if (!responseSent) {
+        responseSent = true;
+        return res.status(404).json({ error: `Folder for Order ID ${orderId} not found` });
+      }
     }
 
     console.log('Matching folder:', matchingFolder.name);
@@ -187,7 +192,10 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     if (!files.length) {
       console.error(`No files found in folder: ${matchingFolder.name}`);
-      return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
+      if (!responseSent) {
+        responseSent = true;
+        return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
+      }
     }
 
     console.log(`Found ${files.length} files in folder: ${matchingFolder.name}`);
@@ -198,7 +206,10 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     if (txtFiles.length === 0 || zipFiles.length === 0) {
       console.error('Required files not found.');
-      return res.status(404).json({ error: 'Required .txt or .zip files not found.' });
+      if (!responseSent) {
+        responseSent = true;
+        return res.status(404).json({ error: 'Required .txt or .zip files not found.' });
+      }
     }
 
     // Create a ZIP archive for all files
@@ -233,14 +244,19 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     // Finalize the archive
     await archive.finalize();
+    responseSent = true; // Mark response as sent
   } catch (error) {
     console.error('Error retrieving files:', error.message);
-    res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
+    if (!responseSent) {
+      responseSent = true;
+      res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
+    }
   } finally {
     client.close();
     console.log('FTP connection closed.');
   }
 });
+
 
 
 // Start the server
