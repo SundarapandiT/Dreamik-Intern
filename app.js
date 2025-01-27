@@ -144,7 +144,7 @@ app.post(
       }
 
       if (req.files['bulkzip']) {
-        for (const [index, zipFile] of req.files['bulzip'].entries()) {
+        for (const [index, zipFile] of req.files['bulkzip'].entries()) {
           const filename = `${f}-Bulk_${index + 1}.zip`;
           await uploadFileToBothFolders(zipFile.buffer, filename);
         }
