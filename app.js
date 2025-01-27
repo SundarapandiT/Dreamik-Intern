@@ -186,53 +186,41 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const folderPath = `${customerDisplayFolder}/${matchingFolder.name}`;
     const files = await client.list(folderPath);
 
-    // Find the ZIP file in the folder
-    const zipFile = files.find((file) => file.name.endsWith('.zip'));
-    if (!zipFile) {
-      console.error(`No ZIP file found in folder: ${matchingFolder.name}`);
-      return res.status(404).json({ error: `No ZIP file found in folder: ${matchingFolder.name}` });
-    }
-
-    const zipFilePath = `${folderPath}/${zipFile.name}`;
-    const localZipPath = path.join(__dirname, zipFile.name);
-
-    console.log(`Downloading ZIP file from: ${zipFilePath} to ${localZipPath}`);
-    await client.downloadTo(localZipPath, zipFilePath);
-
-    // Extract the ZIP file
-    const extractedFolderPath = path.join(__dirname, `extracted_${orderId}`);
-    await fs.promises.mkdir(extractedFolderPath, { recursive: true });
-    await fs.createReadStream(localZipPath)
-      .pipe(unzipper.Extract({ path: extractedFolderPath }))
-      .promise();
-
-    // Read the extracted images and convert to Base64
-    const extractedFiles = await fs.promises.readdir(extractedFolderPath);
+    // Arrays to hold image and text data
     const imageData = [];
+    const textData = [];
 
-    for (const file of extractedFiles) {
-      const filePath = path.join(extractedFolderPath, file);
+    // Process files in the folder
+    for (const file of files) {
+      const filePath = `${folderPath}/${file.name}`;
 
-      // Only process image files (e.g., .png, .jpg)
-      if (file.endsWith('.png') || file.endsWith('.jpg')) {
-        const buffer = await fs.promises.readFile(filePath);
+      // If the file is an image (PNG, JPG), process it
+      if (file.name.endsWith('.png') || file.name.endsWith('.jpg')) {
+        const buffer = await client.downloadToBuffer(filePath);
         imageData.push({
-          name: file,
+          name: file.name,
           type: 'image',
           content: buffer.toString('base64'),
         });
       }
+
+      // If the file is a text file, process it
+      if (file.name.endsWith('.txt')) {
+        const buffer = await client.downloadToBuffer(filePath);
+        const textContent = buffer.toString('utf-8');
+        textData.push({
+          name: file.name,
+          type: 'text',
+          content: textContent,
+        });
+      }
     }
 
-    // Clean up local files (optional)
-    fs.promises.unlink(localZipPath).catch(console.error); // Delete the ZIP file
-    fs.promises.rm(extractedFolderPath, { recursive: true, force: true }).catch(console.error); // Delete the extracted folder
-
-    // Send the response
-    res.status(200).json({ folderName: matchingFolder.name, images: imageData });
+    // Send the response with both image and text data
+    res.status(200).json({ folderName: matchingFolder.name, images: imageData, textFiles: textData });
   } catch (error) {
-    console.error('Error retrieving images:', error);
-    res.status(500).json({ error: 'Failed to retrieve images.' });
+    console.error('Error retrieving files:', error);
+    res.status(500).json({ error: 'Failed to retrieve files.' });
   } finally {
     client.close();
   }
