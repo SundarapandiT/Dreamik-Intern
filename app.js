@@ -152,10 +152,6 @@ app.post(
   }
 );
 
-const fs = require('fs');
-const path = require('path');
-const unzipper = require('unzipper'); // Use unzipper to extract ZIP files
-const { Client } = require('basic-ftp'); // Assuming you're using basic-ftp
 
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
