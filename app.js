@@ -161,7 +161,7 @@ const FTP_CONFIG = {
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
-  
+
   try {
     console.log('Connecting to FTP server...');
     await client.access(FTP_CONFIG);
@@ -214,7 +214,8 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Function to download a file as a stream
     const downloadFile = async (file) => {
       const filePath = `${folderPath}/${file.name}`;
-      const stream = await client.downloadTo(PassThrough(), filePath);
+      const stream = new PassThrough();
+      await client.downloadTo(stream, filePath); // Ensure download is awaited before returning
       return stream;
     };
 
@@ -229,7 +230,6 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     // Finalize the archive
     await archive.finalize();
-    
   } catch (error) {
     console.error('Error retrieving files:', error.message);
     res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
