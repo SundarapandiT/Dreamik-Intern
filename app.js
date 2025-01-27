@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Client } = require('basic-ftp');
 const multer = require('multer');
 const { PassThrough } = require('stream');
-const fs = require('fs');
+const archiver = require('archiver');
 const path = require('path');
 
 const app = express();
@@ -189,28 +189,27 @@ app.get('/retrieve/:orderId', async (req, res) => {
       return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
     }
 
-    // Create an array to store the file data
-    const fileData = [];
+    // Create a ZIP archive for all files in the folder
+    const archive = archiver('zip', { zlib: { level: 9 } });
 
-    // Download each file sequentially
+    // Set the response headers for the ZIP file
+    res.attachment(`${matchingFolder.name}.zip`);
+    res.setHeader('Content-Type', 'application/zip');
+
+    // Pipe the archive to the response
+    archive.pipe(res);
+
+    // Add each file to the archive
     for (const file of files) {
       const filePath = `${folderPath}/${file.name}`;
-      const localFilePath = path.join(__dirname, file.name); // Ensure local path
+      const fileStream = await client.downloadToBuffer(filePath); // Download file as a buffer
 
-      console.log(`Downloading file from: ${filePath} to ${localFilePath}`);
-      await client.downloadTo(localFilePath, filePath); // Download file using downloadTo
-
-      // Read the downloaded file and convert it to base64
-      const buffer = fs.readFileSync(localFilePath);
-      const base64Content = buffer.toString('base64');
-      const fileType = file.name.endsWith('.png') || file.name.endsWith('.jpg') ? 'image' : 'text';
-
-      // Push the file data to the array
-      fileData.push({ name: file.name, type: fileType, content: base64Content });
+      // Append the file to the archive
+      archive.append(fileStream, { name: file.name });
     }
 
-    // Send the response with the folder and file data
-    res.status(200).json({ folderName: matchingFolder.name, files: fileData });
+    // Finalize the archive and send it to the client
+    archive.finalize();
   } catch (error) {
     console.error('Error retrieving files:', error);
     res.status(500).json({ error: 'Failed to retrieve files.' });
