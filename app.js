@@ -150,20 +150,22 @@ app.post(
   }
 );
 
-// Endpoint to retrieve files by orderId including ZIPs
+const FTP_CONFIG = {
+  host: '46.202.138.82',
+  user: 'u709132829.dreamikaishop',
+  password: 'dreamikAi@123',
+  secure: false,
+};
+
+// Retrieve files for a given order ID and send them as a ZIP
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
   client.ftp.verbose = true;
 
   try {
-    // Connect to the FTP server
-    await client.access({
-      host: '46.202.138.82',
-      user: 'u709132829.dreamikaishop',
-      password: 'dreamikAi@123',
-      secure: false,
-    });
+    console.log('Connecting to FTP server...');
+    await client.access(FTP_CONFIG);
 
     const customerDisplayFolder = '/CustomerDisplayItems';
     const folders = await client.list(customerDisplayFolder);
@@ -175,7 +177,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const matchingFolder = folders.find((folder) => folder.name.includes(orderId));
     if (!matchingFolder) {
       console.error(`No folder found for Order ID: ${orderId}`);
-      return res.status(404).json({ error: `No folder found for Order ID: ${orderId}` });
+      return res.status(404).json({ error: `Folder for Order ID ${orderId} not found` });
     }
 
     console.log('Matching folder:', matchingFolder.name);
@@ -189,10 +191,12 @@ app.get('/retrieve/:orderId', async (req, res) => {
       return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
     }
 
+    console.log(`Found ${files.length} files in folder: ${matchingFolder.name}`);
+
     // Create a ZIP archive for all files in the folder
     const archive = archiver('zip', { zlib: { level: 9 } });
 
-    // Set the response headers for the ZIP file
+    // Set response headers for the ZIP file
     res.attachment(`${matchingFolder.name}.zip`);
     res.setHeader('Content-Type', 'application/zip');
 
@@ -202,19 +206,19 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Add each file to the archive
     for (const file of files) {
       const filePath = `${folderPath}/${file.name}`;
-      const fileStream = await client.downloadToBuffer(filePath); // Download file as a buffer
-
-      // Append the file to the archive
-      archive.append(fileStream, { name: file.name });
+      console.log(`Adding file to ZIP: ${filePath}`);
+      const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
+      archive.append(stream, { name: file.name });
     }
 
-    // Finalize the archive and send it to the client
-    archive.finalize();
+    // Finalize the archive
+    await archive.finalize();
   } catch (error) {
-    console.error('Error retrieving files:', error);
-    res.status(500).json({ error: 'Failed to retrieve files.' });
+    console.error('Error retrieving files:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
   } finally {
     client.close();
+    console.log('FTP connection closed.');
   }
 });
 
