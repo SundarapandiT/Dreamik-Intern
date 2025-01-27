@@ -196,7 +196,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
 
     console.log(`Downloading ZIP file from: ${zipFilePath} to ${localZipPath}`);
 
-    // Download the ZIP file
+    // Download the ZIP file using client.downloadTo
     await client.downloadTo(localZipPath, zipFilePath);
 
     // Extract the ZIP file
@@ -206,14 +206,40 @@ app.get('/retrieve/:orderId', async (req, res) => {
       .pipe(unzipper.Extract({ path: extractedFolderPath }))
       .promise();
 
-    // Read the extracted files (both images and the .txt file)
+    // Now we check for the .txt file in the folder (not inside the ZIP)
+    const folderFiles = await client.list(folderPath); // List files in the folder (outside the ZIP)
+    const textFile = folderFiles.find((file) => file.name.endsWith('.txt')); // Look for the .txt file
+
+    let productDetails = {};
+
+    if (textFile) {
+      const textFilePath = `${folderPath}/${textFile.name}`;
+      const localTextFilePath = path.join(__dirname, textFile.name);
+
+      console.log(`Downloading text file from: ${textFilePath} to ${localTextFilePath}`);
+
+      // Download the .txt file containing product details
+      await client.downloadTo(localTextFilePath, textFilePath);
+
+      // Read the content of the .txt file
+      const buffer = await fs.promises.readFile(localTextFilePath, 'utf-8');
+      console.log('Product details (raw):', buffer); // Log the raw content
+      try {
+        productDetails = JSON.parse(buffer); // Parse the JSON content
+        console.log('Product details (parsed):', productDetails); // Log parsed content
+      } catch (error) {
+        console.error(`Error parsing JSON from file ${textFile.name}:`, error);
+      }
+    }
+
+    // Read the extracted images and convert to Base64
     const extractedFiles = await fs.promises.readdir(extractedFolderPath);
     const imageData = [];
 
     for (const file of extractedFiles) {
       const filePath = path.join(extractedFolderPath, file);
 
-      // Process image files (e.g., .png, .jpg)
+      // Only process image files (e.g., .png, .jpg)
       if (file.endsWith('.png') || file.endsWith('.jpg')) {
         const buffer = await fs.promises.readFile(filePath);
         imageData.push({
@@ -222,36 +248,24 @@ app.get('/retrieve/:orderId', async (req, res) => {
           content: buffer.toString('base64'),
         });
       }
-
-      // Check for the .txt file with product details
-      if (file.endsWith('.txt')) {
-        const buffer = await fs.promises.readFile(filePath, 'utf-8');
-        console.log('Product details:', buffer); // Log the .txt content
-
-        try {
-          const productDetails = JSON.parse(buffer); // Parse the JSON content from .txt file
-          imageData.push({
-            name: file,
-            type: 'text',
-            content: productDetails,
-          });
-        } catch (error) {
-          console.error(`Error parsing JSON from file ${file}:`, error);
-          imageData.push({
-            name: file,
-            type: 'text',
-            content: 'Error parsing product details.',
-          });
-        }
-      }
     }
 
     // Clean up local files (optional)
     fs.promises.unlink(localZipPath).catch(console.error); // Delete the ZIP file
     fs.promises.rm(extractedFolderPath, { recursive: true, force: true }).catch(console.error); // Delete the extracted folder
 
-    // Send the response
-    res.status(200).json({ folderName: matchingFolder.name, files: imageData });
+    // Send the response with both images and product details
+    res.status(200).json({
+      folderName: matchingFolder.name,
+      files: [
+        ...imageData,
+        {
+          name: 'productDetails.txt',
+          type: 'text',
+          content: productDetails,
+        },
+      ],
+    });
   } catch (error) {
     console.error('Error retrieving files:', error);
     res.status(500).json({ error: 'Failed to retrieve files.' });
