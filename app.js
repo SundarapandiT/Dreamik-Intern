@@ -207,11 +207,22 @@ app.get('/retrieve/:orderId', async (req, res) => {
     for (const file of files) {
       const filePath = `${folderPath}/${file.name}`;
       console.log(`Adding file to ZIP: ${filePath}`);
-      const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
-      archive.append(stream, { name: file.name });
+
+      // Check if the file is a .txt file for product details
+      if (file.name.endsWith('.txt')) {
+        console.log(`Found .txt file: ${file.name}`);
+
+        // Download the file as a stream and append it to the ZIP archive
+        const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
+        archive.append(stream, { name: file.name });
+      } else {
+        // For other file types (like images, PDFs, etc.), download and append them to the archive
+        const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
+        archive.append(stream, { name: file.name });
+      }
     }
 
-    // Finalize the archive
+    // Finalize the archive (important to complete the ZIP file)
     await archive.finalize();
   } catch (error) {
     console.error('Error retrieving files:', error.message);
