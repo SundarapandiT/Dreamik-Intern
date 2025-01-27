@@ -62,6 +62,7 @@ app.post(
     { name: 'info' },
     { name: 'images' },
     { name: 'zipfiles' },
+    { name: 'bulkzip' },
   ]),
   async (req, res) => {
     const client = new Client();
@@ -142,6 +143,13 @@ app.post(
         }
       }
 
+      if (req.files['bulkzip']) {
+        for (const [index, zipFile] of req.files['zipfiles'].entries()) {
+          const filename = `${f}-Bulk_${index + 1}.zip`;
+          await uploadFileToBothFolders(zipFile.buffer, filename);
+        }
+      }
+      
       res.status(200).json({ message: 'Files uploaded successfully.' });
     } catch (error) {
       console.error('Error during upload:', error);
