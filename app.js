@@ -151,22 +151,24 @@ app.post(
   }
 );
 
-const FTP_CONFIG = {
-  host: '46.202.138.82',
-  user: 'u709132829.dreamikaishop',
-  password: 'dreamikAi@123',
-  secure: false,
-};
+const fs = require('fs');
+const path = require('path');
+const unzipper = require('unzipper'); // Use unzipper to extract ZIP files
+const { Client } = require('basic-ftp'); // Assuming you're using basic-ftp
 
 app.get('/retrieve/:orderId', async (req, res) => {
   const { orderId } = req.params;
   const client = new Client();
-
-  let responseSent = false; // Guard to ensure only one response is sent
+  client.ftp.verbose = true;
 
   try {
-    console.log('Connecting to FTP server...');
-    await client.access(FTP_CONFIG);
+    // Connect to the FTP server
+    await client.access({
+      host: '46.202.138.82',
+      user: 'u709132829.dreamikaishop',
+      password: 'dreamikAi@123',
+      secure: false,
+    });
 
     const customerDisplayFolder = '/CustomerDisplayItems';
     const folders = await client.list(customerDisplayFolder);
@@ -178,10 +180,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const matchingFolder = folders.find((folder) => folder.name.includes(orderId));
     if (!matchingFolder) {
       console.error(`No folder found for Order ID: ${orderId}`);
-      if (!responseSent) {
-        responseSent = true;
-        return res.status(404).json({ error: `Folder for Order ID ${orderId} not found` });
-      }
+      return res.status(404).json({ error: `No folder found for Order ID: ${orderId}` });
     }
 
     console.log('Matching folder:', matchingFolder.name);
@@ -190,74 +189,57 @@ app.get('/retrieve/:orderId', async (req, res) => {
     const folderPath = `${customerDisplayFolder}/${matchingFolder.name}`;
     const files = await client.list(folderPath);
 
-    if (!files.length) {
-      console.error(`No files found in folder: ${matchingFolder.name}`);
-      if (!responseSent) {
-        responseSent = true;
-        return res.status(404).json({ error: `No files found in folder: ${matchingFolder.name}` });
+    // Find the ZIP file in the folder
+    const zipFile = files.find((file) => file.name.endsWith('.zip'));
+    if (!zipFile) {
+      console.error(`No ZIP file found in folder: ${matchingFolder.name}`);
+      return res.status(404).json({ error: `No ZIP file found in folder: ${matchingFolder.name}` });
+    }
+
+    const zipFilePath = `${folderPath}/${zipFile.name}`;
+    const localZipPath = path.join(__dirname, zipFile.name);
+
+    console.log(`Downloading ZIP file from: ${zipFilePath} to ${localZipPath}`);
+    await client.downloadTo(localZipPath, zipFilePath);
+
+    // Extract the ZIP file
+    const extractedFolderPath = path.join(__dirname, `extracted_${orderId}`);
+    await fs.promises.mkdir(extractedFolderPath, { recursive: true });
+    await fs.createReadStream(localZipPath)
+      .pipe(unzipper.Extract({ path: extractedFolderPath }))
+      .promise();
+
+    // Read the extracted images and convert to Base64
+    const extractedFiles = await fs.promises.readdir(extractedFolderPath);
+    const imageData = [];
+
+    for (const file of extractedFiles) {
+      const filePath = path.join(extractedFolderPath, file);
+
+      // Only process image files (e.g., .png, .jpg)
+      if (file.endsWith('.png') || file.endsWith('.jpg')) {
+        const buffer = await fs.promises.readFile(filePath);
+        imageData.push({
+          name: file,
+          type: 'image',
+          content: buffer.toString('base64'),
+        });
       }
     }
 
-    console.log(`Found ${files.length} files in folder: ${matchingFolder.name}`);
+    // Clean up local files (optional)
+    fs.promises.unlink(localZipPath).catch(console.error); // Delete the ZIP file
+    fs.promises.rm(extractedFolderPath, { recursive: true, force: true }).catch(console.error); // Delete the extracted folder
 
-    // Separate the .txt and .zip files
-    const txtFiles = files.filter((file) => file.name.endsWith('.txt'));
-    const zipFiles = files.filter((file) => file.name.endsWith('.zip'));
-
-    if (txtFiles.length === 0 || zipFiles.length === 0) {
-      console.error('Required files not found.');
-      if (!responseSent) {
-        responseSent = true;
-        return res.status(404).json({ error: 'Required .txt or .zip files not found.' });
-      }
-    }
-
-    // Create a ZIP archive for all files
-    const archive = archiver('zip', { zlib: { level: 1 } }); // Faster compression level
-
-    // Set response headers for the ZIP file
-    res.attachment(`${matchingFolder.name}.zip`);
-    res.setHeader('Content-Type', 'application/zip');
-
-    // Pipe the archive to the response
-    archive.pipe(res);
-
-    // Function to download a file as a stream
-    const downloadFile = async (file) => {
-      const filePath = `${folderPath}/${file.name}`;
-      const stream = new PassThrough();
-      await client.downloadTo(stream, filePath); // Ensure download is awaited before returning
-      return stream;
-    };
-
-    // Download and append the .txt files to the archive one by one
-    for (const file of txtFiles) {
-      const stream = await downloadFile(file);
-      archive.append(stream, { name: file.name });
-    }
-
-    // Download and append the .zip files to the archive one by one
-    for (const file of zipFiles) {
-      const stream = await downloadFile(file);
-      archive.append(stream, { name: file.name });
-    }
-
-    // Finalize the archive
-    await archive.finalize();
-    responseSent = true; // Mark response as sent
+    // Send the response
+    res.status(200).json({ folderName: matchingFolder.name, images: imageData });
   } catch (error) {
-    console.error('Error retrieving files:', error.message);
-    if (!responseSent) {
-      responseSent = true;
-      res.status(500).json({ error: 'Failed to retrieve files. Please try again later.' });
-    }
+    console.error('Error retrieving images:', error);
+    res.status(500).json({ error: 'Failed to retrieve images.' });
   } finally {
     client.close();
-    console.log('FTP connection closed.');
   }
 });
-
-
 
 // Start the server
 app.listen(PORT, () => {
