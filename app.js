@@ -3,6 +3,7 @@ const cors = require('cors');
 const { Client } = require('basic-ftp');
 const multer = require('multer');
 const { PassThrough } = require('stream');
+// const { Client } = require('ftp');
 const archiver = require('archiver');
 const path = require('path');
 
@@ -208,18 +209,16 @@ app.get('/retrieve/:orderId', async (req, res) => {
       const filePath = `${folderPath}/${file.name}`;
       console.log(`Adding file to ZIP: ${filePath}`);
 
+      // Download the file as a stream
+      const stream = client.get(filePath);
+
       // Check if the file is a .txt file for product details
       if (file.name.endsWith('.txt')) {
         console.log(`Found .txt file: ${file.name}`);
-
-        // Download the file as a stream and append it to the ZIP archive
-        const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
-        archive.append(stream, { name: file.name });
-      } else {
-        // For other file types (like images, PDFs, etc.), download and append them to the archive
-        const stream = await client.downloadTo(PassThrough(), filePath); // Download as stream
-        archive.append(stream, { name: file.name });
       }
+
+      // Append the stream to the archive
+      archive.append(stream, { name: file.name });
     }
 
     // Finalize the archive (important to complete the ZIP file)
@@ -232,6 +231,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
     console.log('FTP connection closed.');
   }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
