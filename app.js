@@ -68,14 +68,14 @@ app.post(
     const client = new Client();
     client.ftp.verbose = true;
 
-    const generateRandomString = (length = 5) => {
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
-      }
-      return result;
-    };
+    // const generateRandomString = (length = 5) => {
+    //   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    //   let result = '';
+    //   for (let i = 0; i < length; i++) {
+    //     result += characters.charAt(Math.floor(Math.random() * characters.length));
+    //   }
+    //   return result;
+    // };
 
     try {
       // Connect to the FTP server
@@ -86,8 +86,9 @@ app.post(
         secure: false,
       });
 
-      const string = generateRandomString();
-      const f = `${req.body.orderId}-${string}-v1`;
+      // const string = generateRandomString();
+      // const f = `${req.body.orderId}-${string}-v1`;
+       const f = `${req.body.orderId}`;
 
       // Define folder paths
       const customerUploadFolder = `/CustomerUploads/${f}`;
