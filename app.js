@@ -81,8 +81,8 @@ app.post(
       // Connect to the FTP server
       await client.access({
         host: '46.202.138.82',
-        user: 'u709132829.dreamikaishop',
-        password: 'dreamikAi@123',
+        user: 'u709132829.dreamik',
+        password: 'dreamiK@123',
         secure: false,
       });
 
@@ -169,8 +169,8 @@ app.get('/retrieve/:orderId', async (req, res) => {
     // Connect to the FTP server
     await client.access({
       host: '46.202.138.82',
-      user: 'u709132829.dreamikaishop',
-      password: 'dreamikAi@123',
+      user: 'u709132829.dreamik',
+      password: 'dreamiK@123',
       secure: false,
     });
 
