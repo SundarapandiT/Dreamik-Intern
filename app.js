@@ -63,6 +63,7 @@ app.post(
     { name: 'images' },
     { name: 'zipfiles' },
     { name: 'bulkzip' },
+     { name: 'excelfile' } 
   ]),
   async (req, res) => {
     const client = new Client();
@@ -127,7 +128,10 @@ app.post(
         const infoFile = req.files['info'][0];
         await uploadFileToBothFolders(infoFile.buffer, `Info-${f}.txt`);
       }
-
+       if (req.files['excelfile']) {
+        const excelFile = req.files['excelfile'][0];
+        await uploadFileToBothFolders(excelFile.buffer, `excelfile-${f}.xlsx`);
+      }
       // Upload images to both folders
       if (req.files['images']) {
         for (const [index, imageFile] of req.files['images'].entries()) {
