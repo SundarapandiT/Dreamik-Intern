@@ -36,6 +36,9 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
+app.use(express.json());  // ✅ This is required to parse JSON body
+app.use(express.urlencoded({ extended: true }));  // ✅ For form data
+
 
 // Multer configuration for memory storage
 const storage = multer.memoryStorage();
