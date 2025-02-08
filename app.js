@@ -48,41 +48,73 @@ const FTP_CONFIG = {
   secure: false,
 };
 
-// Search History Object (Stored in Memory)
-let searchHistory = {};
+// Remote Excel File Path
+const FTP_FOLDER = '/SearchLogs';
+const EXCEL_FILE_NAME = 'search_history.xlsx';
+const LOCAL_EXCEL_FILE = 'search_history.xlsx';
 
-// Function to upload a file to FTP
-const uploadToFTP = async (buffer, filename, folder) => {
+// Function to download the existing Excel file from FTP
+const downloadFromFTP = async (client) => {
+  try {
+    await client.ensureDir(FTP_FOLDER);
+    await client.downloadTo(LOCAL_EXCEL_FILE, `${FTP_FOLDER}/${EXCEL_FILE_NAME}`);
+    console.log('✅ Existing search history downloaded');
+    return true;
+  } catch (error) {
+    console.log('⚠️ No existing search history found, creating new file.');
+    return false;
+  }
+};
+
+// Function to upload file to FTP
+const uploadToFTP = async (buffer) => {
   const client = new Client();
   try {
     await client.access(FTP_CONFIG);
-    await client.ensureDir(folder); // Ensure directory exists
+    await client.ensureDir(FTP_FOLDER);
     const stream = new PassThrough();
     stream.end(buffer);
-    await client.uploadFrom(stream, `${folder}/${filename}`);
-    console.log(`Uploaded: ${folder}/${filename}`);
+    await client.uploadFrom(stream, `${FTP_FOLDER}/${EXCEL_FILE_NAME}`);
+    console.log(`✅ Uploaded: ${FTP_FOLDER}/${EXCEL_FILE_NAME}`);
   } catch (error) {
-    console.error('FTP Upload Error:', error.message);
+    console.error('🚨 FTP Upload Error:', error.message);
   } finally {
     client.close();
   }
 };
 
-// Function to save search history as an Excel file
-const saveSearchHistoryToExcel = async () => {
-  const wsData = [['Search Term', 'Count']]; // Excel Headers
-  for (const term in searchHistory) {
-    wsData.push([term, searchHistory[term]]);
+// Function to read and update search history in Excel
+const updateSearchHistory = async (searchTerm) => {
+  const client = new Client();
+  await client.access(FTP_CONFIG);
+
+  let searchData = [];
+
+  // Try downloading the existing file
+  const fileExists = await downloadFromFTP(client);
+  if (fileExists) {
+    const workbook = XLSX.readFile(LOCAL_EXCEL_FILE);
+    const sheet = workbook.Sheets['SearchHistory'];
+    searchData = XLSX.utils.sheet_to_json(sheet);
   }
 
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'SearchHistory');
+  // Update search count
+  const existingEntry = searchData.find((entry) => entry['Search Term'] === searchTerm);
+  if (existingEntry) {
+    existingEntry.Count += 1;
+  } else {
+    searchData.push({ 'Search Term': searchTerm, Count: 1 });
+  }
 
-  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+  // Convert to worksheet and save
+  const newWorkbook = XLSX.utils.book_new();
+  const newWorksheet = XLSX.utils.json_to_sheet(searchData);
+  XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, 'SearchHistory');
 
-  // Upload to FTP
-  await uploadToFTP(excelBuffer, 'search_history.xlsx', '/SearchLogs');
+  XLSX.writeFile(newWorkbook, LOCAL_EXCEL_FILE);
+
+  // Upload updated file to FTP
+  await uploadToFTP(fs.readFileSync(LOCAL_EXCEL_FILE));
 };
 
 // API to store search history
@@ -93,13 +125,10 @@ app.post('/search', async (req, res) => {
     return res.status(400).json({ error: 'Search term is required' });
   }
 
-  // Update search count
-  searchHistory[searchTerm] = (searchHistory[searchTerm] || 0) + 1;
+  // Update and save search history
+  await updateSearchHistory(searchTerm);
 
-  // Save to FTP
-  await saveSearchHistoryToExcel();
-
-  res.json({ message: 'Search saved', searchHistory });
+  res.json({ message: 'Search saved successfully!' });
 });
 
 
