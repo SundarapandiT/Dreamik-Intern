@@ -7,6 +7,7 @@ const fs = require('fs');
 const unzipper = require('unzipper'); 
 const archiver = require('archiver');
 const path = require('path');
+const XLSX = require('xlsx');
 
 const app = express();
 const PORT = 3000;
@@ -39,6 +40,68 @@ app.use(cors(corsOptions));
 // Multer configuration for memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+const FTP_CONFIG = {
+  host: '46.202.138.82',
+  user: 'u709132829.dreamik',
+  password: 'dreamiK@123',
+  secure: false,
+};
+
+// Search History Object (Stored in Memory)
+let searchHistory = {};
+
+// Function to upload a file to FTP
+const uploadToFTP = async (buffer, filename, folder) => {
+  const client = new Client();
+  try {
+    await client.access(FTP_CONFIG);
+    await client.ensureDir(folder); // Ensure directory exists
+    const stream = new PassThrough();
+    stream.end(buffer);
+    await client.uploadFrom(stream, `${folder}/${filename}`);
+    console.log(`Uploaded: ${folder}/${filename}`);
+  } catch (error) {
+    console.error('FTP Upload Error:', error.message);
+  } finally {
+    client.close();
+  }
+};
+
+// Function to save search history as an Excel file
+const saveSearchHistoryToExcel = async () => {
+  const wsData = [['Search Term', 'Count']]; // Excel Headers
+  for (const term in searchHistory) {
+    wsData.push([term, searchHistory[term]]);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SearchHistory');
+
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+
+  // Upload to FTP
+  await uploadToFTP(excelBuffer, 'search_history.xlsx', '/SearchLogs');
+};
+
+// API to store search history
+app.post('/search', async (req, res) => {
+  const { searchTerm } = req.body;
+
+  if (!searchTerm) {
+    return res.status(400).json({ error: 'Search term is required' });
+  }
+
+  // Update search count
+  searchHistory[searchTerm] = (searchHistory[searchTerm] || 0) + 1;
+
+  // Save to FTP
+  await saveSearchHistoryToExcel();
+
+  res.json({ message: 'Search saved', searchHistory });
+});
+
 
 // FTP Upload Logic using Streams
 const uploadStreamToFTP = async (stream, remoteFilePath, client) => {
