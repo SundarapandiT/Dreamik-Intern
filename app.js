@@ -8,6 +8,7 @@ const unzipper = require('unzipper');
 const archiver = require('archiver');
 const path = require('path');
 const XLSX = require('xlsx');
+const bodyParser = require("body-parser");
 
 const app = express();
 const PORT = 3000;
@@ -38,6 +39,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());  // ✅ This is required to parse JSON body
 app.use(express.urlencoded({ extended: true }));  // ✅ For form data
+app.use(bodyParser.json());
 
 
 // Multer configuration for memory storage
@@ -380,6 +382,40 @@ app.get('/retrieve/:orderId', async (req, res) => {
   } finally {
     client.close();
   }
+});
+//reseller database
+const db = mysql.createConnection({
+  host: "153.92.15.45",
+  port: "3306",
+  user: "u709132829_dreamik",
+  password: "dreamiK@123",
+  database: "u709132829_resellerlogin"
+});
+
+// Connect to MySQL
+db.connect((err) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+  } else {
+    console.log("Connected to MySQL Database");
+  }
+});
+
+// API Route to Validate Login
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+  
+  const sql = "SELECT * FROM Reseller WHERE name = ? AND password = ?";
+  db.query(sql, [username, password], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length > 0) {
+      res.json({ success: true, message: "Login successful", user: result[0] });
+    } else {
+      res.json({ success: false, message: "Invalid username or password" });
+    }
+  });
 });
 
 // Start the server
