@@ -385,7 +385,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
   }
 });
 //reseller database
-const db = mysql.createConnection({
+/*const db = mysql.createConnection({
   host: "153.92.15.45",
   port: "3306",
   user: "u709132829_dreamik",
@@ -410,6 +410,32 @@ app.post("/api/login", (req, res) => {
   db.query(sql, [username, password], (err, result) => {
     if (err) {
       return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length > 0) {
+      res.json({ success: true, message: "Login successful", user: result[0] });
+    } else {
+      res.json({ success: false, message: "Invalid username or password" });
+    }
+  });
+});*/
+const pool = mysql.createPool({
+  connectionLimit: 20, // Number of connections in the pool
+  host: "153.92.15.45",
+  port: "3306",
+  user: "u709132829_dreamik",
+  password: "dreamiK@123",
+  database: "u709132829_resellerlogin"
+});
+
+// API Route to Validate Login
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const sql = "SELECT * FROM Reseller WHERE name = ? AND password = ?";
+  
+  pool.query(sql, [username, password], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: "Database error", details: err.message });
     }
     if (result.length > 0) {
       res.json({ success: true, message: "Login successful", user: result[0] });
