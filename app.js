@@ -385,7 +385,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
   }
 });
 //reseller database
-/*const db = mysql.createConnection({
+const db = mysql.createConnection({
   host: "153.92.15.45",
   port: "3306",
   user: "u709132829_dreamik",
@@ -417,8 +417,8 @@ app.post("/api/login", (req, res) => {
       res.json({ success: false, message: "Invalid username or password" });
     }
   });
-});*/
-const pool = mysql.createPool({
+});
+/*const pool = mysql.createPool({
   connectionLimit: 20, // Number of connections in the pool
   host: "153.92.15.45",
   port: "3306",
@@ -444,7 +444,7 @@ app.post("/api/login", (req, res) => {
     }
   });
 });
-
+*/
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
