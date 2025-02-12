@@ -385,7 +385,7 @@ app.get('/retrieve/:orderId', async (req, res) => {
   }
 });
 //reseller database
-const db = mysql.createConnection({
+/*const db = mysql.createConnection({
   host: "153.92.15.45",
   port: "3306",
   user: "u709132829_dreamik",
@@ -417,14 +417,18 @@ app.post("/api/login", (req, res) => {
       res.json({ success: false, message: "Invalid username or password" });
     }
   });
-});
-/*const pool = mysql.createPool({
-  connectionLimit: 20, // Number of connections in the pool
+});*/
+const pool = mysql.createPool({
+  connectionLimit: 20, // Adjust based on traffic
   host: "153.92.15.45",
   port: "3306",
   user: "u709132829_dreamik",
   password: "dreamiK@123",
-  database: "u709132829_resellerlogin"
+  database: "u709132829_resellerlogin",
+  waitForConnections: true,
+  queueLimit: 0,
+  connectTimeout: 10000, // 10 seconds
+  acquireTimeout: 10000, // 10 seconds
 });
 
 // API Route to Validate Login
@@ -433,18 +437,26 @@ app.post("/api/login", (req, res) => {
 
   const sql = "SELECT * FROM Reseller WHERE name = ? AND password = ?";
   
-  pool.query(sql, [username, password], (err, result) => {
+  pool.getConnection((err, connection) => {
     if (err) {
-      return res.status(500).json({ error: "Database error", details: err.message });
+      return res.status(500).json({ error: "Database connection error", details: err.message });
     }
-    if (result.length > 0) {
-      res.json({ success: true, message: "Login successful", user: result[0] });
-    } else {
-      res.json({ success: false, message: "Invalid username or password" });
-    }
+    
+    connection.query(sql, [username, password], (queryErr, result) => {
+      connection.release(); // Release the connection back to the pool
+
+      if (queryErr) {
+        return res.status(500).json({ error: "Database query error", details: queryErr.message });
+      }
+
+      if (result.length > 0) {
+        res.json({ success: true, message: "Login successful", user: result[0] });
+      } else {
+        res.json({ success: false, message: "Invalid username or password" });
+      }
+    });
   });
 });
-*/
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
