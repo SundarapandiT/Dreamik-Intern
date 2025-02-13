@@ -384,42 +384,9 @@ app.get('/retrieve/:orderId', async (req, res) => {
     client.close();
   }
 });
-//reseller database
-/*const db = mysql.createConnection({
-  host: "153.92.15.45",
-  port: "3306",
-  user: "u709132829_dreamik",
-  password: "dreamiK@123",
-  database: "u709132829_resellerlogin"
-});
-
-// Connect to MySQL
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-  } else {
-    console.log("Connected to MySQL Database");
-  }
-});
-
-// API Route to Validate Login
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-  
-  const sql = "SELECT * FROM Reseller WHERE name = ? AND password = ?";
-  db.query(sql, [username, password], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Database error" });
-    }
-    if (result.length > 0) {
-      res.json({ success: true, message: "Login successful", user: result[0] });
-    } else {
-      res.json({ success: false, message: "Invalid username or password" });
-    }
-  });
-});*/
+//reseller db
 const pool = mysql.createPool({
-  connectionLimit: 20, // Adjust based on traffic
+  connectionLimit: 20,
   host: "153.92.15.45",
   port: "3306",
   user: "u709132829_dreamik",
@@ -427,11 +394,11 @@ const pool = mysql.createPool({
   database: "u709132829_resellerlogin",
   waitForConnections: true,
   queueLimit: 0,
-  connectTimeout: 10000, // 10 seconds
-  acquireTimeout: 10000, // 10 seconds
+  connectTimeout: 10000,
+  acquireTimeout: 10000,
 });
 
-// API Route to Validate Login
+// **Login API (Without Hashing)**
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -439,14 +406,16 @@ app.post("/api/login", (req, res) => {
   
   pool.getConnection((err, connection) => {
     if (err) {
-      return res.status(500).json({ error: "Database connection error", details: err.message });
+      console.error("Database connection error:", err);
+      return res.status(500).json({ error: "Database connection error" });
     }
-    
+
     connection.query(sql, [username, password], (queryErr, result) => {
-      connection.release(); // Release the connection back to the pool
+      connection.release();
 
       if (queryErr) {
-        return res.status(500).json({ error: "Database query error", details: queryErr.message });
+        console.error("Database query error:", queryErr);
+        return res.status(500).json({ error: "Database query error" });
       }
 
       if (result.length > 0) {
@@ -457,8 +426,9 @@ app.post("/api/login", (req, res) => {
     });
   });
 });
-// **Check if User ID Exists & Insert if Not**
-app.post("/addResller", (req, res) => {
+
+// **Add Reseller API (Without Hashing)**
+app.post("/addReseller", (req, res) => {
   const {
     name,
     id,
@@ -478,8 +448,15 @@ app.post("/addResller", (req, res) => {
     courier,
   } = req.body;
 
+  if (!id || !password) {
+    return res.status(400).json({ error: "ID and Password are required" });
+  }
+
   pool.query("SELECT * FROM Reseller WHERE id = ?", [id], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
 
     if (results.length > 0) {
       return res.status(400).json({ message: "Reseller ID already exists" });
@@ -491,7 +468,7 @@ app.post("/addResller", (req, res) => {
         name,
         id,
         email,
-        password,
+        password, // **Plain text password for testing**
         mobileno,
         whatsappno,
         address1,
@@ -506,7 +483,10 @@ app.post("/addResller", (req, res) => {
         courier,
       ],
       (err, result) => {
-        if (err) return res.status(500).json({ error: "Insert failed" });
+        if (err) {
+          console.error("Insert failed:", err);
+          return res.status(500).json({ error: "Insert failed" });
+        }
         res.status(200).json({ message: "Reseller added successfully" });
       }
     );
