@@ -427,7 +427,7 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// **Add Reseller API (Without Hashing)**
+// Add Reseller 
 app.post("/addReseller", (req, res) => {
   const {
     name,
@@ -448,18 +448,23 @@ app.post("/addReseller", (req, res) => {
     courier,
   } = req.body;
 
-  if (!id || !password) {
-    return res.status(400).json({ error: "ID and Password are required" });
+  if (!id || !email || !password) {
+    return res.status(400).json({ error: "ID, Email, and Password are required" });
   }
 
-  pool.query("SELECT * FROM Reseller WHERE id = ?", [id], (err, results) => {
+  pool.query("SELECT * FROM Reseller WHERE id = ? OR email = ?", [id, email], (err, results) => {
     if (err) {
       console.error("Database error:", err);
       return res.status(500).json({ error: "Database error" });
     }
 
     if (results.length > 0) {
-      return res.status(400).json({ message: "Reseller ID already exists" });
+      const existingReseller = results[0];
+      if (existingReseller.id === id) {
+        return res.status(400).json({ message: "Reseller ID already exists" });
+      } else if (existingReseller.email === email) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
     }
 
     pool.query(
@@ -482,14 +487,100 @@ app.post("/addReseller", (req, res) => {
         chekin,
         courier,
       ],
-      (err, result) => {
-        if (err) {
-          console.error("Insert failed:", err);
+      (insertErr, result) => {
+        if (insertErr) {
+          console.error("Insert failed:", insertErr);
           return res.status(500).json({ error: "Insert failed" });
         }
         res.status(200).json({ message: "Reseller added successfully" });
       }
     );
+  });
+});
+//update reseller db
+app.put("/updateReseller/:id", (req, res) => {
+  const resellerId = req.params.id;
+  const {
+    name,
+    email,
+    password,
+    mobileno,
+    whatsappno,
+    address1,
+    address2,
+    pincode,
+    district,
+    state,
+    landmark,
+    products,
+    walkin,
+    chekin,
+    courier,
+  } = req.body;
+
+  pool.query("SELECT * FROM Reseller WHERE id = ?", [resellerId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    pool.query(
+      "UPDATE Reseller SET name = ?, email = ?, password = ?, mobileno = ?, whatsappno = ?, address1 = ?, address2 = ?, pincode = ?, district = ?, state = ?, landmark = ?, products = ?, walkin = ?, chekin = ?, courier = ? WHERE id = ?",
+      [
+        name,
+        email,
+        password,
+        mobileno,
+        whatsappno,
+        address1,
+        address2,
+        pincode,
+        district,
+        state,
+        landmark,
+        JSON.stringify(products),
+        walkin,
+        chekin,
+        courier,
+        resellerId,
+      ],
+      (updateErr, result) => {
+        if (updateErr) {
+          console.error("Update failed:", updateErr);
+          return res.status(500).json({ error: "Update failed" });
+        }
+
+        res.status(200).json({ message: "User updated successfully" });
+      }
+    );
+  });
+});
+//delete reseller
+app.delete("/deleteReseller/:id", (req, res) => {
+  const resellerId = req.params.id;
+
+  pool.query("SELECT * FROM Reseller WHERE id = ?", [resellerId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Reseller not found" });
+    }
+
+    pool.query("DELETE FROM Reseller WHERE id = ?", [resellerId], (deleteErr, result) => {
+      if (deleteErr) {
+        console.error("Delete failed:", deleteErr);
+        return res.status(500).json({ error: "Delete failed" });
+      }
+
+      res.status(200).json({ message: "Reseller deleted successfully" });
+    });
   });
 });
 // Start the server
