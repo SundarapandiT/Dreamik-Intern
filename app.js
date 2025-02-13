@@ -457,6 +457,61 @@ app.post("/api/login", (req, res) => {
     });
   });
 });
+// **Check if User ID Exists & Insert if Not**
+app.post("/addResller", (req, res) => {
+  const {
+    name,
+    id,
+    email,
+    password,
+    mobileno,
+    whatsappno,
+    address1,
+    address2,
+    pincode,
+    district,
+    state,
+    landmark,
+    products,
+    walkin,
+    chekin,
+    courier,
+  } = req.body;
+
+  pool.query("SELECT * FROM Reseller WHERE id = ?", [id], (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    if (results.length > 0) {
+      return res.status(400).json({ message: "Reseller ID already exists" });
+    }
+
+    pool.query(
+      "INSERT INTO Reseller (name, id, email, password, mobileno, whatsappno, address1, address2, pincode, district, state, landmark, products, walkin, chekin, courier) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        name,
+        id,
+        email,
+        password,
+        mobileno,
+        whatsappno,
+        address1,
+        address2,
+        pincode,
+        district,
+        state,
+        landmark,
+        JSON.stringify(products),
+        walkin,
+        chekin,
+        courier,
+      ],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: "Insert failed" });
+        res.status(200).json({ message: "Reseller added successfully" });
+      }
+    );
+  });
+});
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
