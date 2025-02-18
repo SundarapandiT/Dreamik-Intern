@@ -10,7 +10,7 @@ const path = require('path');
 const XLSX = require('xlsx');
 const bodyParser = require("body-parser");
 const mysql = require("mysql");
-
+const axios = require("axios");
 const app = express();
 const PORT = 3000;
 
@@ -582,6 +582,34 @@ app.delete("/deleteReseller/:id", (req, res) => {
       res.status(200).json({ message: "Reseller deleted successfully" });
     });
   });
+});
+app.post("/remove-bg", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const response = await axios.post(
+      "https://api.remove.bg/v1.0/removebg",
+      {
+        image_file: req.file.buffer, // Send image buffer
+        size: "auto",
+      },
+      {
+        headers: {
+          "X-Api-Key": "ZD9HfNEg8nTKnUiyGbXXZ48A", // Replace with your remove.bg API Key
+          "Content-Type": "multipart/form-data",
+        },
+        responseType: "arraybuffer",
+      }
+    );
+
+    res.set("Content-Type", "image/png");
+    res.send(response.data);
+  } catch (error) {
+    console.error("Error removing background:", error);
+    res.status(500).json({ error: "Failed to remove background" });
+  }
 });
 // Start the server
 app.listen(PORT, () => {
