@@ -619,29 +619,27 @@ const FTP_CONF = {
     password: "dreamiK@123",
     secure: false,
 };
-
 const getUserIP = (req) => {
     return req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress || "unknown";
 };
 
 const uploadTo = async (userIP, logs) => {
-    return new Promise((resolve, reject) => {
-        const client = new ftp();
+    const client = new Client();
+    try {
+        await client.access(FTP_CONF);
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const filename = `Userlogs/${userIP}_${timestamp}.json`;
+        const directory = "Userlogs";
+        const filename = `${directory}/${userIP}_${timestamp}.json`;
         const fileContent = JSON.stringify(logs, null, 2);
 
-        client.on("ready", () => {
-            client.put(Buffer.from(fileContent, "utf8"), filename, (err) => {
-                client.end();
-                if (err) return reject(err);
-                resolve("✅ Logs uploaded successfully!");
-            });
-        });
-
-        client.on("error", (err) => reject(`❌ FTP Connection Error: ${err.message}`));
-        client.connect(FTP_CONF);
-    });
+        await client.ensureDir(directory);
+        await client.uploadFrom(Buffer.from(fileContent, "utf8"), filename);
+        console.log("✅ Log uploaded successfully");
+    } catch (error) {
+        console.error("❌ FTP upload error:", error);
+    } finally {
+        client.close();
+    }
 };
 
 app.post("/api/log", async (req, res) => {
@@ -657,7 +655,6 @@ app.post("/api/log", async (req, res) => {
         res.status(500).json({ error: "Failed to store logs" });
     }
 });
-
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
