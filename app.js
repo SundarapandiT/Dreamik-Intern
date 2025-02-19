@@ -628,7 +628,7 @@ const uploadTo = async (userIP, logs) => {
     try {
         await client.access(FTP_CONF);
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const directory = "Userlogs";
+        const directory = "/Userlogs";
         const filename = `${directory}/${userIP}_${timestamp}.json`;
         const fileContent = JSON.stringify(logs, null, 2);
 
