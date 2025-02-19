@@ -611,6 +611,25 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: "Failed to remove background" });
   }
 });
+
+//logs for user page visits
+app.post("/api/log", (req, res) => {
+    const { page } = req.body;
+    const userIP = req.ip;
+    const timestamp = new Date().toISOString();
+    const logFile = "user_activity.log";
+
+    const logEntry = `${timestamp} - ${page} - User IP: ${userIP}\n`;
+
+    fs.appendFile(logFile, logEntry, (err) => {
+        if (err) {
+            console.error("Error writing to log file:", err);
+            return res.status(500).send("Error logging data");
+        }
+        res.status(200).send("Logged");
+    });
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
