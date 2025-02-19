@@ -624,45 +624,44 @@ const FOLDER = "/Userlogs"; // Ensure correct FTP folder path
 
 async function uploadTo(logEntry) {
     const client = new ftp.Client();
-    client.ftp.verbose = true; // Enable FTP logging
+    client.ftp.verbose = true;
+
+    const logFileName = `user_activity_${new Date().toISOString().split("T")[0]}.log`;
+    const localPath = `./${logFileName}`;
+    const remotePath = `${FOLDER}/${logFileName}`;
 
     try {
+        await fs.appendFile(localPath, logEntry + "\n");
+        console.log(`📝 Log entry appended: ${logEntry}`);
+
         await client.access(FTP_CONFIG);
-        
-        // ✅ Ensure folder exists on FTP
-        try {
-            await client.ensureDir(FOLDER);
-            console.log(`✅ Folder ${FOLDER} exists or created successfully.`);
-        } catch (folderErr) {
-            console.error(`❌ Failed to create folder ${FOLDER}:`, folderErr);
-            return;
-        }
+        await client.ensureDir(FOLDER);
+        await client.uploadFrom(localPath, remotePath);
 
-        const logFileName = `user_activity_${new Date().toISOString().split("T")[0]}.log`;
-        const localPath = `./${logFileName}`;
-        
-        // ✅ Append log entry to local file
-        fs.appendFileSync(localPath, logEntry + "\n");
-
-        // ✅ Upload log file to FTP
-        await client.uploadFrom(localPath, `${FOLDER}/${logFileName}`);
-        console.log("🚀 Log uploaded successfully to FTP!");
+        console.log(`🚀 Log uploaded successfully: ${remotePath}`);
     } catch (err) {
         console.error("❌ FTP Upload Error:", err);
+        throw err;
     } finally {
         client.close();
     }
 }
 
-app.post("/api/log", (req, res) => {
-    const { page } = req.body;
-    const timestamp = new Date().toISOString();
-    const logEntry = `${timestamp} - ${page}`;
+app.post("/api/log", async (req, res) => {
+    try {
+        const { page } = req.body;
+        const timestamp = new Date().toISOString();
+        const logEntry = `${timestamp} - ${page}`;
 
-    uploadTo(logEntry)
-        .then(() => res.status(200).json({ status: "success", message: "Log uploaded" }))
-        .catch(() => res.status(500).json({ status: "error", message: "Failed to upload log" }));
+        await uploadTo(logEntry);
+        res.status(200).json({ status: "success", message: "Log uploaded" });
+    } catch {
+        res.status(500).json({ status: "error", message: "Failed to upload log" });
+    }
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 
 // Start the server
