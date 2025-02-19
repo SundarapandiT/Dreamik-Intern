@@ -614,13 +614,13 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
 
 //logs for user page visits
 
-const FTP_CONFIG = {
-     host: '46.202.138.82',
-      user: 'u709132829.dreamik',
-      password: 'dreamiK@123',
-      secure: false,
-};
-const FTP_FOLDER = "/Userlogs;
+// const FTP_CONFIG = {
+//      host: '46.202.138.82',
+//       user: 'u709132829.dreamik',
+//       password: 'dreamiK@123',
+//       secure: false,
+// };
+const FOLDER = "/Userlogs;
 
 async function uploadToFTP(logEntry) {
     const client = new ftp.Client();
@@ -636,7 +636,7 @@ async function uploadToFTP(logEntry) {
         fs.appendFileSync(localPath, logEntry + "\n");
 
         // Upload to FTP folder
-        await client.uploadFrom(localPath, `${FTP_FOLDER}/${logFileName}`);
+        await client.uploadFrom(localPath, `${FOLDER}/${logFileName}`);
         console.log("Log uploaded successfully!");
     } catch (err) {
         console.error("FTP Upload Error:", err);
