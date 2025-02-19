@@ -622,7 +622,7 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
 // };
 const FOLDER = "/Userlogs"; // Ensure correct FTP folder path
 
-async function uploadToFTP(logEntry) {
+async function uploadTo(logEntry) {
     const client = new ftp.Client();
     client.ftp.verbose = true; // Enable FTP logging
 
@@ -659,7 +659,7 @@ app.post("/api/log", (req, res) => {
     const timestamp = new Date().toISOString();
     const logEntry = `${timestamp} - ${page}`;
 
-    uploadToFTP(logEntry)
+    uploadTo(logEntry)
         .then(() => res.status(200).json({ status: "success", message: "Log uploaded" }))
         .catch(() => res.status(500).json({ status: "error", message: "Failed to upload log" }));
 });
