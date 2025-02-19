@@ -613,21 +613,46 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
 });
 
 //logs for user page visits
+
+const FTP_CONFIG = {
+     host: '46.202.138.82',
+      user: 'u709132829.dreamik',
+      password: 'dreamiK@123',
+      secure: false,
+};
+const FTP_FOLDER = "/Userlogs;
+
+async function uploadToFTP(logEntry) {
+    const client = new ftp.Client();
+    client.ftp.verbose = true; // Enable logging
+
+    try {
+        await client.access(FTP_CONFIG);
+
+        const logFileName = `user_activity_${new Date().toISOString().split("T")[0]}.log`;
+        const localPath = `./${logFileName}`;
+        
+        // Append log entry to local file
+        fs.appendFileSync(localPath, logEntry + "\n");
+
+        // Upload to FTP folder
+        await client.uploadFrom(localPath, `${FTP_FOLDER}/${logFileName}`);
+        console.log("Log uploaded successfully!");
+    } catch (err) {
+        console.error("FTP Upload Error:", err);
+    } finally {
+        client.close();
+    }
+}
+
 app.post("/api/log", (req, res) => {
     const { page } = req.body;
-    const userIP = req.ip;
     const timestamp = new Date().toISOString();
-    const logFile = "user_activity.log";
+    const logEntry = `${timestamp} - ${page}`;
 
-    const logEntry = `${timestamp} - ${page} - User IP: ${userIP}\n`;
-
-    fs.appendFile(logFile, logEntry, (err) => {
-        if (err) {
-            console.error("Error writing to log file:", err);
-            return res.status(500).send("Error logging data");
-        }
-        res.status(200).send("Logged");
-    });
+    uploadToFTP(logEntry)
+        .then(() => res.status(200).json({ status: "success", message: "Log uploaded" }))
+        .catch(() => res.status(500).json({ status: "error", message: "Failed to upload log" }));
 });
 
 // Start the server
