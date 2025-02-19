@@ -620,26 +620,35 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
 //       password: 'dreamiK@123',
 //       secure: false,
 // };
-const FOLDER = "/Userlogs;
+const FOLDER = "/Userlogs"; // Ensure correct FTP folder path
 
 async function uploadToFTP(logEntry) {
     const client = new ftp.Client();
-    client.ftp.verbose = true; // Enable logging
+    client.ftp.verbose = true; // Enable FTP logging
 
     try {
         await client.access(FTP_CONFIG);
+        
+        // ✅ Ensure folder exists on FTP
+        try {
+            await client.ensureDir(FOLDER);
+            console.log(`✅ Folder ${FOLDER} exists or created successfully.`);
+        } catch (folderErr) {
+            console.error(`❌ Failed to create folder ${FOLDER}:`, folderErr);
+            return;
+        }
 
         const logFileName = `user_activity_${new Date().toISOString().split("T")[0]}.log`;
         const localPath = `./${logFileName}`;
         
-        // Append log entry to local file
+        // ✅ Append log entry to local file
         fs.appendFileSync(localPath, logEntry + "\n");
 
-        // Upload to FTP folder
+        // ✅ Upload log file to FTP
         await client.uploadFrom(localPath, `${FOLDER}/${logFileName}`);
-        console.log("Log uploaded successfully!");
+        console.log("🚀 Log uploaded successfully to FTP!");
     } catch (err) {
-        console.error("FTP Upload Error:", err);
+        console.error("❌ FTP Upload Error:", err);
     } finally {
         client.close();
     }
@@ -654,6 +663,7 @@ app.post("/api/log", (req, res) => {
         .then(() => res.status(200).json({ status: "success", message: "Log uploaded" }))
         .catch(() => res.status(500).json({ status: "error", message: "Failed to upload log" }));
 });
+
 
 // Start the server
 app.listen(PORT, () => {
