@@ -614,38 +614,36 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
 
 //logs for user page visits
 
-// const FTP_CONFIG = {
-//      host: '46.202.138.82',
-//       user: 'u709132829.dreamik',
-//       password: 'dreamiK@123',
-//       secure: false,
-// };
-const FOLDER = "/Userlogs"; // Ensure correct FTP folder path
-
-async function uploadTo(logEntry) {
+const FTP_CONF= {
+     host: '46.202.138.82',
+      user: 'u709132829.dreamik',
+      password: 'dreamiK@123',
+      secure: false,
+};
+const uploadTo = async (logEntry) => {
     const client = new ftp.Client();
     client.ftp.verbose = true;
 
     const logFileName = `user_activity_${new Date().toISOString().split("T")[0]}.log`;
-    const localPath = `./${logFileName}`;
     const remotePath = `${FOLDER}/${logFileName}`;
 
     try {
-        await fs.appendFile(localPath, logEntry + "\n");
-        console.log(`📝 Log entry appended: ${logEntry}`);
-
-        await client.access(FTP_CONFIG);
+        await client.access(FTP_CONF);
         await client.ensureDir(FOLDER);
-        await client.uploadFrom(localPath, remotePath);
 
+        // ✅ Convert log entry to a stream
+        const stream = new PassThrough();
+        stream.end(logEntry + "\n");
+
+        await client.uploadFrom(stream, remotePath);
         console.log(`🚀 Log uploaded successfully: ${remotePath}`);
-    } catch (err) {
-        console.error("❌ FTP Upload Error:", err);
-        throw err;
+    } catch (error) {
+        console.error("🚨 FTP Upload Error:", error.message);
+        throw error;
     } finally {
         client.close();
     }
-}
+};
 
 app.post("/api/log", async (req, res) => {
     try {
@@ -659,6 +657,7 @@ app.post("/api/log", async (req, res) => {
         res.status(500).json({ status: "error", message: "Failed to upload log" });
     }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
