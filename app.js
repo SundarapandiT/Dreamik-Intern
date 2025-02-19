@@ -12,6 +12,7 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const axios = require("axios");
 const app = express();
+const os = require("os");
 const PORT = 3000;
 
 // Allowed Origins for CORS
@@ -619,26 +620,33 @@ const FTP_CONF = {
     password: "dreamiK@123",
     secure: false,
 };
+
 const getUserIP = (req) => {
     return req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress || "unknown";
 };
 
 const uploadTo = async (userIP, logs) => {
     const client = new Client();
-    try {
-        await client.access(FTP_CONF);
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const directory = "/Userlogs";
-        const filename = `${directory}/${userIP}_${timestamp}.json`;
-        const fileContent = JSON.stringify(logs, null, 2);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const directory = "/Userlogs";
+    const filename = `${userIP}_${timestamp}.json`;
+    const tempFilePath = path.join(os.tmpdir(), filename); // Temporary file path
 
+    try {
+        // Write logs to a temporary file
+        fs.writeFileSync(tempFilePath, JSON.stringify(logs, null, 2), "utf8");
+
+        await client.access(FTP_CONF);
         await client.ensureDir(directory);
-        await client.uploadFrom(Buffer.from(fileContent, "utf8"), filename);
+        await client.uploadFrom(tempFilePath, `${directory}/${filename}`);
+
         console.log("✅ Log uploaded successfully");
     } catch (error) {
         console.error("❌ FTP upload error:", error);
     } finally {
         client.close();
+        // Delete the temporary file
+        fs.unlinkSync(tempFilePath);
     }
 };
 
@@ -655,6 +663,7 @@ app.post("/api/log", async (req, res) => {
         res.status(500).json({ error: "Failed to store logs" });
     }
 });
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
