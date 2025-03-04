@@ -447,6 +447,7 @@ app.post("/addReseller", (req, res) => {
     walkin,
     chekin,
     courier,
+    offercount,
   } = req.body;
 
   if (!id || !email || !password) {
@@ -469,7 +470,7 @@ app.post("/addReseller", (req, res) => {
     }
 
     pool.query(
-      "INSERT INTO Reseller (name, id, email, password, mobileno, whatsappno, address1, address2, pincode, district, state, landmark, products, walkin, chekin, courier) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO Reseller (name, id, email, password, mobileno, whatsappno, address1, address2, pincode, district, state, landmark, products, walkin, chekin, courier,offercount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         name,
         id,
@@ -487,6 +488,7 @@ app.post("/addReseller", (req, res) => {
         walkin,
         chekin,
         courier,
+        offercount,
       ],
       (insertErr, result) => {
         if (insertErr) {
@@ -517,6 +519,7 @@ app.put("/updateReseller/:id", (req, res) => {
     walkin,
     chekin,
     courier,
+    offercount,
   } = req.body;
 
   pool.query("SELECT * FROM Reseller WHERE id = ?", [resellerId], (err, results) => {
@@ -530,7 +533,7 @@ app.put("/updateReseller/:id", (req, res) => {
     }
 
     pool.query(
-      "UPDATE Reseller SET name = ?, email = ?, password = ?, mobileno = ?, whatsappno = ?, address1 = ?, address2 = ?, pincode = ?, district = ?, state = ?, landmark = ?, products = ?, walkin = ?, chekin = ?, courier = ? WHERE id = ?",
+      "UPDATE Reseller SET name = ?, email = ?, password = ?, mobileno = ?, whatsappno = ?, address1 = ?, address2 = ?, pincode = ?, district = ?, state = ?, landmark = ?, products = ?, walkin = ?, chekin = ?, courier = ?, offercount = ? WHERE id = ?",
       [
         name,
         email,
@@ -547,6 +550,7 @@ app.put("/updateReseller/:id", (req, res) => {
         walkin,
         chekin,
         courier,
+        offercount,
         resellerId,
       ],
       (updateErr, result) => {
