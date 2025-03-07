@@ -162,7 +162,8 @@ app.post(
     { name: 'images' },
     { name: 'zipfiles' },
     { name: 'bulkzip' },
-     { name: 'excelfile' } 
+     { name: 'excelfile' } ,
+    { name: 'invoice' }
   ]),
   async (req, res) => {
     const client = new Client();
@@ -220,6 +221,12 @@ app.post(
         const paymentStream = PassThrough();
         paymentStream.end(paymentFile.buffer);
         await uploadStreamToFTP(paymentStream, `${customerUploadFolder}/Payment-${f}.txt`, client);
+      }
+       if (req.files['invoice']) {
+        const invoicetFile = req.files['invoice'][0];
+        const invoiceStream = PassThrough();
+        invoiceStream.end(invoiceFile.buffer);
+        await uploadStreamToFTP(invoiceStream, `${customerUploadFolder}/InvoiceBill-${f}.pdf`, client);
       }
 
       // Upload `info.json` to both folders
