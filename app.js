@@ -595,6 +595,49 @@ app.delete("/deleteReseller/:id", (req, res) => {
     });
   });
 });
+//coupons
+app.get("/api/coupons", (req, res) => {
+  pool.query("SELECT * FROM coupons", (err, result) => {
+    if (err) {
+      console.error("Error fetching coupons:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(result);
+  });
+});
+
+// Update a coupon
+app.put("/api/coupons/:id", (req, res) => {
+  const { id } = req.params;
+  const { coupon_name, coupon_value, coupon_discount_mode, coupon_count } = req.body;
+
+  const sql = `UPDATE coupons SET coupon_name=?, coupon_value=?, coupon_discount_mode=?, coupon_count=? WHERE id=?`;
+
+  pool.query(sql, [coupon_name, coupon_value, coupon_discount_mode, coupon_count, id], (err, result) => {
+    if (err) {
+      console.error("Error updating coupon:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json({ message: "Coupon updated successfully" });
+  });
+});
+
+// Delete a coupon
+app.delete("/api/coupons/:id", (req, res) => {
+  const { id } = req.params;
+
+  const sql = `DELETE FROM coupons WHERE id=?`;
+
+  pool.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Error deleting coupon:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json({ message: "Coupon deleted successfully" });
+  });
+});
+
+//remove-bg
 app.post("/remove-bg", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
