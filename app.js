@@ -609,18 +609,53 @@ app.get("/api/coupons", (req, res) => {
 // Update a coupon
 app.put("/api/coupons/:id", (req, res) => {
   const { id } = req.params;
-  const { coupon_name, coupon_value, coupon_discount_mode, coupon_count } = req.body;
+  const {
+    coupon_name,
+    coupon_value,
+    coupon_discount_mode,
+    coupon_count,
+    coupon_start,
+    coupon_end,
+    coupon_status,
+    coupon_applicable_products,
+  } = req.body;
 
-  const sql = `UPDATE coupons SET coupon_name=?, coupon_value=?, coupon_discount_mode=?, coupon_count=? WHERE id=?`;
+  const sql = `
+    UPDATE coupons
+    SET coupon_name = ?, 
+        coupon_value = ?, 
+        coupon_discount_mode = ?, 
+        coupon_count = ?, 
+        coupon_start = ?, 
+        coupon_end = ?, 
+        coupon_status = ?, 
+        coupon_applicable_products = ?
+    WHERE id = ?
+  `;
 
-  pool.query(sql, [coupon_name, coupon_value, coupon_discount_mode, coupon_count, id], (err, result) => {
-    if (err) {
-      console.error("Error updating coupon:", err);
-      return res.status(500).json({ error: "Database error" });
+  pool.query(
+    sql,
+    [
+      coupon_name,
+      coupon_value,
+      coupon_discount_mode,
+      coupon_count,
+      coupon_start,
+      coupon_end,
+      coupon_status,
+      coupon_applicable_products,
+      id,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("Error updating coupon:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      res.json({ message: "Coupon updated successfully" });
     }
-    res.json({ message: "Coupon updated successfully" });
-  });
+  );
 });
+
 
 // Delete a coupon
 app.delete("/api/coupons/:id", (req, res) => {
