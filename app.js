@@ -656,6 +656,50 @@ app.put("/api/coupons/:id", (req, res) => {
   );
 });
 
+//add new coupon
+app.post("/api/newcoupons", (req, res) => {
+  const {
+    coupon_name,
+    coupon_code,
+    coupon_value,
+    coupon_discount_mode,
+    coupon_start,
+    coupon_end,
+    coupon_count,
+    coupon_usage_count,
+    coupon_status,
+    coupon_applicable_products,
+  } = req.body;
+
+  const sql = `
+    INSERT INTO coupons 
+    (coupon_name, coupon_code, coupon_value, coupon_discount_mode, 
+     coupon_start, coupon_end, coupon_count, coupon_usage_count, 
+     coupon_status, coupon_applicable_products) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const values = [
+    coupon_name,
+    coupon_code,
+    coupon_value,
+    coupon_discount_mode,
+    coupon_start,
+    coupon_end,
+    coupon_count,
+    coupon_usage_count || 0, // Default to 0 if not provided
+    coupon_status || "Active", // Default to Active
+    coupon_applicable_products,
+  ];
+
+  pool.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Error adding new coupon:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.status(201).json({ message: "Coupon added successfully", id: result.insertId });
+  });
+});
+
 
 // Delete a coupon
 app.delete("/api/coupons/:id", (req, res) => {
