@@ -858,15 +858,7 @@ const uploadToOrders = async (order) => {
 // POST route
 app.post("/orders", async (req, res) => {
   const order = req.body;
-
-  if (!order || typeof order.paid !== "number" || !order.time) {
-    return res.status(400).json({ error: "Invalid order data." });
-  }
-
-  console.log("Received order:", order);
-
   await uploadToOrders(order);
-
   return res.status(201).json({ message: "Order saved successfully!" });
 });
 
