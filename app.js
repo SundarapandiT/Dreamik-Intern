@@ -837,7 +837,23 @@ const uploadToOrders = async (order) => {
       allOrders.push(order);
   
       // Convert to clean CSV
-      const parser = new Parser({ fields: ["paid", "time", "invoiceid"] });
+  const parser = new Parser({   fields: [
+        "Orderid",
+        "invoiceid",
+        "timestamp",
+        "paymentMode",
+        "deliveryMode",
+        "amountpaid",
+        "name",
+        "address",
+        "pincode",
+        "email",
+        "phone",
+        "district",
+        "state",
+        "customertype",
+        "resellerid"
+      ] });
       const newCSV = parser.parse(allOrders);
   
       // Write and upload
