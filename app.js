@@ -39,7 +39,7 @@ const corsOptions = {
 };
 
 // Middleware
-app.options('*', cors(corsOptions)); // 🔥 This handles OPTIONS properly
+app.use(cors(corsOptions));
 app.use(express.json());  // ✅ This is required to parse JSON body
 app.use(express.urlencoded({ extended: true }));  // ✅ For form data
 app.use(bodyParser.json());
