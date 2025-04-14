@@ -14,7 +14,8 @@ const axios = require("axios");
 const app = express();
 const os = require("os");
 const PORT = 3000;
-
+const { Parser } = require("json2csv"); 
+const Papa = require("papaparse");
 // Allowed Origins for CORS
 const allowedOrigins = [
   'http://localhost:5173',
@@ -795,6 +796,83 @@ app.post("/api/log", async (req, res) => {
         console.error("❌ Log upload failed:", error);
         res.status(500).json({ error: "Failed to store logs" });
     }
+});
+
+const FTP_CONF = {
+  host: "46.202.138.82",
+  user: "u709132829.dreamik",
+  password: "dreamiK@123",
+  secure: false,
+};
+
+const uploadTo = async (order) => {
+    const client = new Client();
+    const directory = "/CustomerOrders";
+    const filename = "cusorders.csv";
+    const tempFilePath = path.join(os.tmpdir(), filename);
+    const tempOldFilePath = path.join(os.tmpdir(), `old-${filename}`);
+  
+    try {
+      await client.access(FTP_CONF);
+      await client.ensureDir(directory);
+  
+      let allOrders = [];
+  
+      // Check if file already exists
+      const fileList = await client.list(directory);
+      const fileExists = fileList.some(f => f.name === filename);
+  
+      if (fileExists) {
+        // Download old CSV
+        await client.downloadTo(tempOldFilePath, `${directory}/${filename}`);
+        const csvData = fs.readFileSync(tempOldFilePath, "utf8");
+  
+        // Parse CSV to JSON using papaparse
+        const parsed = Papa.parse(csvData, {
+          header: true,
+          skipEmptyLines: true
+        });
+  
+        if (parsed.data && parsed.data.length > 0) {
+          allOrders = parsed.data;
+        }
+      }
+  
+      // Append new order
+      allOrders.push(order);
+  
+      // Convert to clean CSV
+      const parser = new Parser({ fields: ["paid", "time", "invoiceid"] });
+      const newCSV = parser.parse(allOrders);
+  
+      // Write and upload
+      fs.writeFileSync(tempFilePath, newCSV, "utf8");
+      await client.uploadFrom(tempFilePath, `${directory}/${filename}`);
+  
+      console.log("✅ Order appended and uploaded to FTP successfully.");
+    } catch (error) {
+      console.error("❌ FTP upload error:", error);
+    } finally {
+      client.close();
+      [tempFilePath, tempOldFilePath].forEach(file => {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      });
+    }
+  };
+
+// POST route
+app.post("/orders", async (req, res) => {
+  const order = req.body;
+
+  if (!order || typeof order.paid !== "number" || !order.time) {
+    return res.status(400).json({ error: "Invalid order data." });
+  }
+
+  console.log("Received order:", order);
+
+  await uploadTo(order);
+
+  return res.status(201).json({ message: "Order saved successfully!" });
 });
 
 // Start the server
