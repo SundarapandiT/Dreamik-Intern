@@ -805,7 +805,7 @@ const FTP_CONF = {
   secure: false,
 };
 
-const uploadTo = async (order) => {
+const uploadToOrders = async (order) => {
     const client = new Client();
     const directory = "/CustomerOrders";
     const filename = "cusorders.csv";
@@ -870,7 +870,7 @@ app.post("/orders", async (req, res) => {
 
   console.log("Received order:", order);
 
-  await uploadTo(order);
+  await uploadToOrders(order);
 
   return res.status(201).json({ message: "Order saved successfully!" });
 });
