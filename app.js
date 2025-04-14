@@ -798,12 +798,7 @@ app.post("/api/log", async (req, res) => {
     }
 });
 
-const FTP_CONF = {
-  host: "46.202.138.82",
-  user: "u709132829.dreamik",
-  password: "dreamiK@123",
-  secure: false,
-};
+
 
 const uploadToOrders = async (order) => {
     const client = new Client();
